@@ -1,41 +1,33 @@
 import mongoose from "mongoose";
 
-const adminSchema = new mongoose.Schema(
-    {
-        name: {
-            type: String,
-            required: true,
-        },
-        email: {
-        type: String,
-        required: true,
-        lowercase: true,
-        trim: true,
-        unique: true,
-        },
-        location: {
-            type: string,
-            required: true,
-        },
-        document: {
-           type: file,
-           required: true,
-           enum: [
-        "application/pdf"
-      ],
-        },
-        category: {
-            type: String,
-            required: true,
-        },
-        isFeatured: {
-            type: Boolean,
-            default: false,
-        },
+const adminFormSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    { timestamps: true }
+
+    businessName: String,
+    businessType: String,
+    country: String,
+    city: String,
+    phone: String,
+    reason: String,
+
+    documents: {
+      businessDoc: String,
+      ownerId: String,
+      financeDoc: String,
+    },
+
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+  },
+  { timestamps: true }
 );
 
-const Admin = mongoose.model("Admin", adminSchema);
-
-export default Admin;
+export default mongoose.model("AdminForm", adminFormSchema);
