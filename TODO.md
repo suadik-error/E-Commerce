@@ -1,11 +1,16 @@
-# TODO: Fix LoginPage.jsx
+# CSS Splitting Task
 
-- [x] Fix handleChange to use [e.target.name] instead of [e.target.email]
-- [x] Add validatePassword function (copied from SignupPage)
-- [x] Wrap the try-catch block into a new handleSubmit async function
-- [x] Change fetch URL from signup to login endpoint
-- [x] Update form body to include only email and password
-- [x] Change success navigation from "/login" to "/"
-- [x] Add onSubmit={handleSubmit} to the form element
-- [x] Add name, value, and onChange attributes to input fields
-- [x] Add error display in the JSX if error exists
+## Plan
+Split the monolithic `index.css` into separate modular CSS files.
+
+## Tasks
+- [ ] Create `base.css` - General styles (body, section, resets)
+- [ ] Create `navbar.css` - Navbar component styles
+- [ ] Create `auth.css` - Login and signup page styles
+- [ ] Create `hero.css` - Hero/welcome page styles
+- [ ] Create `dashboard.css` - Dashboard layout and sidebar styles
+- [ ] Create `components.css` - Shared components (tables, cards, buttons, forms, modals)
+- [ ] Create `pages.css` - Specific page styles (settings, admin forms)
+- [ ] Update `index.css` to import all these files
+
+## Status: In Progress

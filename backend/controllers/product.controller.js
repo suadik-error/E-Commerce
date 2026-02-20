@@ -2,10 +2,31 @@ import { redis } from "../lib/redis.js";
 import cloudinary from "../lib/cloudinary.js";
 import Product from "../model/product.model.js";
 import Request from "../model/request.model.js";
+import Manager from "../model/manager.model.js";
+import Agent from "../model/agent.model.js";
+
+const resolveOwnerAdminId = async (user) => {
+    if (user.role === "admin") return user._id;
+    if (user.role === "manager") {
+        const manager = await Manager.findOne({ email: user.email }).select("admin");
+        return manager?.admin || null;
+    }
+    if (user.role === "agent") {
+        const agent = await Agent.findOne({ email: user.email }).select("manager");
+        if (!agent) return null;
+        const manager = await Manager.findById(agent.manager).select("admin");
+        return manager?.admin || null;
+    }
+    return null;
+};
 
 export const getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find({}); // find all products
+        const ownerAdmin = await resolveOwnerAdminId(req.user);
+        if (!ownerAdmin) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        const products = await Product.find({ ownerAdmin }).sort({ createdAt: -1 });
         res.json({ products });
     } catch (error) {
         console.log("Error in getAllProducts controller", error.message);
@@ -42,12 +63,27 @@ export const getFeaturedProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
     try {
-        const { name, brand, description, color, price, image, category } = req.body;
+        const { name, brand, description, color, price, quantity, image, category } = req.body;
+        const parsedQuantity = Number(quantity);
+        const ownerAdmin = await resolveOwnerAdminId(req.user);
+        let finalImage = image || "";
 
-        let cloudinaryResponse = null;
+        if (!ownerAdmin) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        if (Number.isNaN(parsedQuantity) || parsedQuantity < 0) {
+            return res.status(400).json({ message: "Quantity must be a number greater than or equal to 0" });
+        }
 
         if (image) {
-            cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
+            try {
+                const cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
+                finalImage = cloudinaryResponse?.secure_url || image;
+            } catch (uploadError) {
+                // Fallback to provided URL/base64 if cloudinary is not configured.
+                finalImage = image;
+            }
         }
 
         const product = await Product.create({
@@ -56,8 +92,10 @@ export const createProduct = async (req, res) => {
             description,
             color,
             price,
-            image: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "",
+            quantity: parsedQuantity,
+            image: finalImage,
             category,
+            ownerAdmin,
         });
 
         res.status(201).json(product);
@@ -69,7 +107,8 @@ export const createProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const ownerAdmin = await resolveOwnerAdminId(req.user);
+        const product = await Product.findOne({ _id: req.params.id, ownerAdmin });
 
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
@@ -90,6 +129,54 @@ export const deleteProduct = async (req, res) => {
         res.json({ message: "Product deleted successfully" });
     } catch (error) {
         console.log("Error in deleteProduct controller", error.message);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+export const updateProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, brand, description, color, price, quantity, image, category } = req.body;
+        const ownerAdmin = await resolveOwnerAdminId(req.user);
+
+        const existingProduct = await Product.findOne({ _id: id, ownerAdmin });
+        if (!existingProduct) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        let finalImage = existingProduct.image;
+        if (typeof image === "string" && image.trim()) {
+            try {
+                const cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
+                finalImage = cloudinaryResponse?.secure_url || image;
+            } catch (uploadError) {
+                finalImage = image;
+            }
+        }
+
+        const parsedQuantity = quantity === undefined ? existingProduct.quantity : Number(quantity);
+        if (Number.isNaN(parsedQuantity) || parsedQuantity < 0) {
+            return res.status(400).json({ message: "Quantity must be a number greater than or equal to 0" });
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(
+            existingProduct._id,
+            {
+                name,
+                brand,
+                description,
+                color,
+                price,
+                quantity: parsedQuantity,
+                image: finalImage,
+                category,
+            },
+            { new: true, runValidators: true }
+        );
+
+        res.json(updatedProduct);
+    } catch (error) {
+        console.log("Error in updateProduct controller", error.message);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };

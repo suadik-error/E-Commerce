@@ -13,11 +13,32 @@ const managerSchema = new mongoose.Schema({
         unique: true,
     },
     phone: {
-        type: Number,
+        type: String,
         required: true,
         maxlength: 15,
     },
-
+    address: {
+        type: String,
+    },
+    // Link to the admin who created this manager
+    admin: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    // Status
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    // Profile picture
+    profilePicture: {
+        type: String,
+    },
+    // Government issued ID
+    governmentId: {
+        type: String,
+    },
 }, { timestamps: true });
 
 const Manager = mongoose.model("Manager", managerSchema);

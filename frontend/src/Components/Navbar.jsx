@@ -1,48 +1,42 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Home, User, Bell } from "lucide-react";
 
 const Navbar = () => {
-  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(null); // null = loading
+  const [notifications, setNotifications] = useState(3); // Mock notification count
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/auth/profile", {
-        method: "POST",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
         credentials: "include",
       });
       console.log("Profile status:", res.status);
-
-      setIsAuthenticated(res.ok);
+      return res.ok;
     } catch {
-      setIsAuthenticated(false);
+      return false;
     }
   };
 
   useEffect(() => {
-    checkAuth();
+    const fetchAuth = async () => {
+      const isAuth = await checkAuth();
+      setIsAuthenticated(isAuth);
+    };
+
+    fetchAuth();
 
     // 🔁 Listen for login/logout changes
-    window.addEventListener("authChanged", checkAuth);
-    return () => window.removeEventListener("authChanged", checkAuth);
+    const handleAuthChange = async () => {
+      const isAuth = await checkAuth();
+      setIsAuthenticated(isAuth);
+    };
+
+    window.addEventListener("authChanged", handleAuthChange);
+    return () => window.removeEventListener("authChanged", handleAuthChange);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await fetch("http://localhost:4000/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      setIsAuthenticated(false);
-      window.dispatchEvent(new Event("authChanged"));
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout failed");
-    }
-  };
-
-  if (isAuthenticated === null) return null; // avoid flicker
+  if (isAuthenticated === null) return <div>Loading...</div>; // avoid flicker
 
   return (
     <header className="navbar">
@@ -51,24 +45,30 @@ const Navbar = () => {
       </div>
 
       <nav className="navbar-right">
-        <NavLink to="/" end>Home</NavLink>
+        <NavLink to="/" end>
+          <Home size={18} />
+          <span>Home</span>
+        </NavLink>
 
         {isAuthenticated && (
           <>
-            <NavLink to="/products">Products</NavLink>
-            <NavLink to="/orders">Orders</NavLink>
-            <NavLink to="/cart">Cart</NavLink>
+            <button className="notification-btn">
+              <Bell size={18} />
+              {notifications > 0 && (
+                <span className="notification-badge">{notifications}</span>
+              )}
+            </button>
+            <NavLink to="/dashboard/settings">
+              <User size={18} />
+              <span>Profile</span>
+            </NavLink>
           </>
         )}
 
-        {!isAuthenticated ? (
+        {!isAuthenticated && (
           <NavLink to="/login" className="login-btn">
             Login
           </NavLink>
-        ) : (
-          <button onClick={handleLogout} className="logout-btn">
-            Logout
-          </button>
         )}
       </nav>
     </header>

@@ -17,6 +17,11 @@ export const protectRoute = async (req, res, next) => {
                 return res.status(401).json({ message: "User not found" });
             }
 
+            // Normalize role to avoid case/whitespace mismatches in auth checks.
+            if (typeof user.role === "string") {
+                user.role = user.role.trim().toLowerCase();
+            }
+
             req.user = user;
 
             next();
@@ -47,4 +52,18 @@ export const managerRoute = (req, res, next) => {
         return res.status(403).json({ message: "Access denied - Manager only" });
     }
 
+};
+
+export const checkRole = (...roles) => {
+    const allowedRoles = roles.flat();
+
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+        if (!allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({ message: `Access denied - ${allowedRoles.join(" or ")} only` });
+        }
+        next();
+    };
 };

@@ -8,18 +8,20 @@ import {
     getRecommendedProducts,
     toggleFeaturedProduct,
     sellProductRequest,
+    updateProduct,
 } from "../controllers/product.controller.js";
-import { adminRoute, protectRoute } from "../middleware/auth.middleware.js";
+import { checkRole, protectRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/", protectRoute, adminRoute, getAllProducts);
+router.get("/", protectRoute, checkRole(["admin", "manager", "agent"]), getAllProducts);
 router.get("/featured", getFeaturedProducts);
 router.get("/category/:category", getProductsByCategory);
 router.get("/recommendations", getRecommendedProducts);
-router.post("/", protectRoute, adminRoute, createProduct);
-router.post("/:id", protectRoute, adminRoute, sellProductRequest);
-router.patch("/:id", protectRoute, adminRoute, toggleFeaturedProduct);
-router.delete("/:id", protectRoute, adminRoute, deleteProduct);
+router.post("/", protectRoute, checkRole(["admin", "manager"]), createProduct);
+router.post("/:id", protectRoute, checkRole(["admin", "manager"]), sellProductRequest);
+router.put("/:id", protectRoute, checkRole(["admin", "manager"]), updateProduct);
+router.patch("/:id", protectRoute, checkRole(["admin"]), toggleFeaturedProduct);
+router.delete("/:id", protectRoute, checkRole(["admin", "manager"]), deleteProduct);
 
 export default router;

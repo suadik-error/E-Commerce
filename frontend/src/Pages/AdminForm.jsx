@@ -65,11 +65,12 @@ const AdminForm = () => {
     }
   };
 
-  return (
-    <div style={{ maxWidth: "650px", margin: "40px auto", background: "#ffffff", padding: "30px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(20, 10, 10, 0.1)" }}>
-      <h2 style={{textAlign: "center", marginBottom: "20px"}}>Request Admin Access</h2>
+ return (
+  <div className="admin-page">
+    <div className="admin-card">
+      <h2>Request Admin Access</h2>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", padding: "12px 14px", borderRadius: 10 }}>
+      <form onSubmit={handleSubmit} className="admin-form">
         <input name="businessName" placeholder="Business Name" onChange={handleChange} required />
 
         <select name="businessType" onChange={handleChange} required>
@@ -86,27 +87,30 @@ const AdminForm = () => {
 
         <textarea name="reason" placeholder="Why do you need admin access?" onChange={handleChange} required />
 
-        <label>Business Registration Document</label>
+        <label className="file-label">Business Registration Document</label>
         <input type="file" name="businessDoc" accept=".pdf,.jpg,.png" required onChange={handleChange} />
 
-        <label>Owner Government ID</label>
+        <label className="file-label">Owner Government ID</label>
         <input type="file" name="ownerId" accept=".pdf,.jpg,.png" required onChange={handleChange} />
 
-        <label>Financial Capability Proof</label>
+        <label className="file-label">Financial Capability Proof</label>
         <input type="file" name="financeDoc" accept=".pdf,.jpg,.png" required onChange={handleChange} />
 
-        <label>
-          <input type="checkbox" name="declaration" onChange={handleChange} /> I confirm all information is true
+        <label className="checkbox-group">
+          <input type="checkbox" name="declaration" onChange={handleChange} />
+          I confirm all information is true
         </label>
 
         <button type="submit" disabled={loading}>
           {loading ? "Submitting..." : "Submit Request"}
         </button>
 
-        {message && <p>{message}</p>}
+        {message && <p className="form-message">{message}</p>}
       </form>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default AdminForm;

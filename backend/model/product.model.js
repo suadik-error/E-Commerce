@@ -24,6 +24,12 @@ const productSchema = new mongoose.Schema(
             min: 0,
             required: true,
         },
+        quantity: {
+            type: Number,
+            min: 0,
+            default: 0,
+            required: true,
+        },
         image: {
             type: String,
             required: [true, "Image is required"],
@@ -35,6 +41,12 @@ const productSchema = new mongoose.Schema(
         isFeatured: {
             type: Boolean,
             default: false,
+        },
+        ownerAdmin: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            index: true,
+            default: null,
         },
     },
     { timestamps: true }

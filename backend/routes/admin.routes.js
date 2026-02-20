@@ -1,7 +1,7 @@
 import express from "express";
 import upload from "../middleware/upload.middleware.js";
 import { protectRoute as protect } from "../middleware/auth.middleware.js";
-import { createAdminRequest } from "../controllers/admin.controller.js";
+import { createAdminRequest, getStats } from "../controllers/admin.controller.js";
 
 const router = express.Router();
 
@@ -15,5 +15,7 @@ router.post(
   ]),
   createAdminRequest
 );
+
+router.get("/stats", getStats);
 
 export default router;

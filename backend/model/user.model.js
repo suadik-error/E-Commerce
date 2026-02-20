@@ -16,12 +16,18 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, "Password is required"],
-        minlength: [6, "Password must be at least 6 characters long"]
+        minlength: [8, "Password must be at least 8 characters long"]
     },
     role: {
         type: String,
-        enum: ["user", "manager", "admin"],
+        enum: ["user", "manager", "agent", "admin"],
         default: "user"
+    },
+    createdByAdmin: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+        index: true,
     },
 
     barcodeGenerator: {

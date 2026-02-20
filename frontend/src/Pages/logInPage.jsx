@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+const getRedirectPathByRole = (role) => {
+  const normalizedRole = String(role || "").trim().toLowerCase();
+
+  if (normalizedRole === "admin") return "/dashboard";
+  if (normalizedRole === "manager") return "/manager";
+  if (normalizedRole === "agent") return "/agent";
+  return "/welcome";
+};
+
 const LoginPage = () => {
   const navigate = useNavigate();
 
@@ -26,7 +37,7 @@ const LoginPage = () => {
       setLoading(true);
       setError("");
 
-      const res = await fetch("http://localhost:4000/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,10 +52,26 @@ const LoginPage = () => {
         throw new Error(data.message || "Login failed");
       }
 
-      // Login successful
-      navigate("/ welcome");
-      window.dispatchEvent(new Event("authChanged"));
+      let role = (data.user || data)?.role;
 
+      // Use server-authenticated profile as source of truth when available.
+      try {
+        const profileRes = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+          credentials: "include",
+        });
+        if (profileRes.ok) {
+          const profile = await profileRes.json();
+          role = profile?.role ?? role;
+        }
+      } catch (_) {
+        // Keep login response role as fallback.
+      }
+
+      const redirectPath = getRedirectPathByRole(role);
+
+      console.log("User role:", role);
+      window.dispatchEvent(new Event("authChanged"));
+      navigate(redirectPath);
 
     } catch (err) {
       setError(err.message);
