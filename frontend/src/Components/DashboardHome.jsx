@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import axios from "axios";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const DashboardHome = () => {
   const [stats, setStats] = useState({
@@ -16,7 +18,7 @@ const DashboardHome = () => {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get("http://localhost:4000/api/stats", {
+      const res = await axios.get(`${API_BASE_URL}/api/stats`, {
         withCredentials: true,
       });
       setStats(res.data);
@@ -56,7 +58,7 @@ const DashboardHome = () => {
 
         <div className="stat-card highlight">
           <h3>Revenue</h3>
-          <p className="stat-number">₵{stats.totalRevenue.toLocaleString()}</p>
+          <p className="stat-number">â‚µ{stats.totalRevenue.toLocaleString()}</p>
           <span className="stat-label">Total earned</span>
         </div>
       </div>
@@ -66,10 +68,10 @@ const DashboardHome = () => {
         <h2>Recent Activity</h2>
 
         <ul>
-          <li>🟢 New user registered</li>
-          <li>📦 Product “Samsung A14” added</li>
-          <li>💳 Payment received ₵1,200</li>
-          <li>👤 Manager account approved</li>
+          <li>ðŸŸ¢ New user registered</li>
+          <li>ðŸ“¦ Product â€œSamsung A14â€ added</li>
+          <li>ðŸ’³ Payment received â‚µ1,200</li>
+          <li>ðŸ‘¤ Manager account approved</li>
         </ul>
       </div>
     </div>

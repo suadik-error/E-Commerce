@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+
 
 const RequireAuth = ({ children, allowedRoles = [] }) => {
   const [loading, setLoading] = useState(true);

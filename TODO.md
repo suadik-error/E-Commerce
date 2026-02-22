@@ -15,9 +15,3 @@ Split the monolithic `index.css` into separate modular CSS files.
 
 ## Status: In Progress
 
-## Passwords 
-- [] MjxLGhFv%YQ5
-- [] oiKSLmo5gU@b
-
-Recovery code for Twilio
-QD7RZWX7JGWXHMQPFCXQBX62

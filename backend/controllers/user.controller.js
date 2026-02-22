@@ -47,7 +47,29 @@ export const getAllUsers = async (req, res) => {
       ],
     })
       .select("-password")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const agentEmailsInUsers = users.filter((u) => u.role === "agent").map((u) => u.email);
+    if (agentEmailsInUsers.length > 0) {
+      const agentProfiles = await Agent.find({ email: { $in: agentEmailsInUsers } })
+        .select("email manager")
+        .populate("manager", "name email")
+        .lean();
+      const agentProfileMap = new Map(agentProfiles.map((agent) => [agent.email, agent]));
+      const enhancedUsers = users.map((user) => {
+        if (user.role !== "agent") return user;
+        const agentProfile = agentProfileMap.get(user.email);
+        return {
+          ...user,
+          managerId: agentProfile?.manager?._id || agentProfile?.manager || null,
+          managerName: agentProfile?.manager?.name || null,
+          managerEmail: agentProfile?.manager?.email || null,
+        };
+      });
+      return res.status(200).json(enhancedUsers);
+    }
+
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch users" });
@@ -68,6 +90,7 @@ export const createUser = async (req, res) => {
       dateOfBirth,
       managerId,
     } = req.body;
+    const uploadedProfilePicture = req.file?.path;
     const normalizedRole = String(role || "").trim().toLowerCase();
     const normalizedEmail = String(email || "").toLowerCase().trim();
 
@@ -101,6 +124,7 @@ export const createUser = async (req, res) => {
       email: normalizedEmail,
       password: generatedPassword,
       role: normalizedRole,
+      profilePicture: uploadedProfilePicture || (profilePicture ? String(profilePicture).trim() : ""),
       createdByAdmin: req.user._id,
     });
 
@@ -112,7 +136,7 @@ export const createUser = async (req, res) => {
           phone: String(phone).trim(),
           address,
           governmentId,
-          profilePicture,
+          profilePicture: uploadedProfilePicture || profilePicture,
           admin: req.user._id,
         });
       }
@@ -132,7 +156,7 @@ export const createUser = async (req, res) => {
           governmentId: String(governmentId).trim(),
           dateOfBirth: dateOfBirth || undefined,
           address,
-          profilePicture,
+          profilePicture: uploadedProfilePicture || profilePicture,
           manager: manager._id,
         });
       }
@@ -175,7 +199,8 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, role } = req.body;
+    const { name, email, role, profilePicture, managerId } = req.body;
+    const uploadedProfilePicture = req.file?.path;
     const existing = await User.findById(id);
     if (!existing) {
       return res.status(404).json({ message: "User not found" });
@@ -207,6 +232,12 @@ export const updateUser = async (req, res) => {
       updates.role = normalizedRole;
     }
 
+    if (uploadedProfilePicture) {
+      updates.profilePicture = uploadedProfilePicture;
+    } else if (typeof profilePicture === "string") {
+      updates.profilePicture = profilePicture.trim();
+    }
+
     const updatedUser = await User.findByIdAndUpdate(id, updates, {
       new: true,
       runValidators: true,
@@ -218,6 +249,7 @@ export const updateUser = async (req, res) => {
         {
           ...(updates.name ? { name: updates.name } : {}),
           ...(updates.email ? { email: updates.email } : {}),
+          ...(updates.profilePicture ? { profilePicture: updates.profilePicture } : {}),
           ...(updates.role && updates.role !== "manager" ? { isActive: false } : {}),
         }
       );
@@ -229,9 +261,26 @@ export const updateUser = async (req, res) => {
         {
           ...(updates.name ? { name: updates.name } : {}),
           ...(updates.email ? { email: updates.email } : {}),
+          ...(updates.profilePicture ? { profilePicture: updates.profilePicture } : {}),
           ...(updates.role && updates.role !== "agent" ? { isActive: false } : {}),
         }
       );
+    }
+
+    const shouldUpdateAgentManager =
+      (existing.role === "agent" || updates.role === "agent") &&
+      typeof managerId !== "undefined";
+
+    if (shouldUpdateAgentManager) {
+      if (!managerId) {
+        await Agent.findOneAndUpdate({ email: updates.email || existing.email }, { manager: null });
+      } else {
+        const manager = await Manager.findOne({ _id: managerId, admin: req.user._id }).select("_id");
+        if (!manager) {
+          return res.status(404).json({ message: "Manager not found for agent reassignment" });
+        }
+        await Agent.findOneAndUpdate({ email: updates.email || existing.email }, { manager: manager._id });
+      }
     }
 
     res.status(200).json(updatedUser);

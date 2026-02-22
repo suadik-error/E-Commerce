@@ -1,6 +1,6 @@
-import { NavLink, useNavigate } from "react-router-dom";
+﻿import { NavLink, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
+LayoutDashboard,
   Users,
   Package,
   CreditCard,
@@ -12,12 +12,15 @@ import {
   Shield
 } from "lucide-react";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+
 const Sidebar = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });

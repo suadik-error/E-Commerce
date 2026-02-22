@@ -29,6 +29,32 @@ const userSchema = new mongoose.Schema({
         default: null,
         index: true,
     },
+    profilePicture: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+    notifications: {
+        type: Boolean,
+        default: true,
+    },
+    theme: {
+        type: String,
+        enum: ["light", "dark", "auto"],
+        default: "light",
+    },
+    language: {
+        type: String,
+        default: "en",
+    },
+    timezone: {
+        type: String,
+        default: "UTC",
+    },
+    twoFactor: {
+        type: Boolean,
+        default: false,
+    },
 
     barcodeGenerator: {
         barcode: {

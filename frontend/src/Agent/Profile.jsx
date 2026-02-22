@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+
 
 const AgentProfile = () => {
   const [user, setUser] = useState(null);
@@ -20,6 +22,7 @@ const AgentProfile = () => {
     phone: "",
     location: "",
     address: "",
+    profilePicture: "",
   });
 
   useEffect(() => {
@@ -28,7 +31,7 @@ const AgentProfile = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+      const res = await fetch(`${API_BASE_URL}/api/agents/profile/me`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -39,6 +42,7 @@ const AgentProfile = () => {
           phone: data.phone || "",
           location: data.location || "",
           address: data.address || "",
+          profilePicture: null,
         });
       } else {
         setError(data.message || "Failed to fetch profile");
@@ -51,6 +55,11 @@ const AgentProfile = () => {
   };
 
   const handleChange = (e) => {
+    if (e.target.type === "file") {
+      const file = e.target.files?.[0] || null;
+      setFormData({ ...formData, [e.target.name]: file });
+      return;
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -64,11 +73,19 @@ const AgentProfile = () => {
     setSuccess("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/agents/profile`, {
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      payload.append("phone", formData.phone);
+      payload.append("location", formData.location);
+      payload.append("address", formData.address || "");
+      if (formData.profilePicture) {
+        payload.append("profilePicture", formData.profilePicture);
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/agents/profile/me`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: payload,
       });
 
       const data = await res.json();
@@ -151,7 +168,16 @@ const AgentProfile = () => {
       <div className="profile-card">
         <div className="profile-header">
           <div className="profile-avatar">
-            {user?.name?.charAt(0).toUpperCase()}
+            {user?.profilePicture ? (
+              <img
+                src={user.profilePicture}
+                alt={`${user?.name || "Agent"} profile`}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              user?.name?.charAt(0).toUpperCase()
+            )}
           </div>
           <div className="profile-info">
             <h2>{user?.name}</h2>
@@ -203,6 +229,15 @@ const AgentProfile = () => {
                 value={formData.address}
                 onChange={handleChange}
                 rows="3"
+              />
+            </div>
+            <div className="form-group">
+              <label>Profile Picture</label>
+              <input
+                type="file"
+                accept="image/*"
+                name="profilePicture"
+                onChange={handleChange}
               />
             </div>
             <div className="form-actions">

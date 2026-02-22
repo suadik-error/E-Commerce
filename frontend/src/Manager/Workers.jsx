@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const ManagerWorkers = () => {
   const [workers, setWorkers] = useState([]);
@@ -20,7 +22,7 @@ const ManagerWorkers = () => {
 
   const fetchWorkers = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/workers", {
+      const res = await fetch(`${API_BASE_URL}/api/workers`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -45,7 +47,7 @@ const ManagerWorkers = () => {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:4000/api/workers", {
+      const res = await fetch(`${API_BASE_URL}/api/workers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -77,7 +79,7 @@ const ManagerWorkers = () => {
     if (!window.confirm("Are you sure you want to delete this worker?")) return;
 
     try {
-      const res = await fetch(`http://localhost:4000/api/workers/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/workers/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

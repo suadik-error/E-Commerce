@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+
 
 const initialForm = {
   name: "",
@@ -10,7 +12,7 @@ const initialForm = {
   phone: "",
   address: "",
   governmentId: "",
-  profilePicture: "",
+  profilePicture: null,
   location: "",
   dateOfBirth: "",
   managerId: "",
@@ -65,6 +67,11 @@ const Users = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (e.target.type === "file") {
+      const file = e.target.files?.[0] || null;
+      setFormData((prev) => ({ ...prev, [name]: file }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -76,30 +83,33 @@ const Users = () => {
     setDelivery(null);
 
     try {
-      const payload = {
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-      };
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      payload.append("email", formData.email);
+      payload.append("role", formData.role);
 
       if (formData.role === "manager") {
-        payload.phone = formData.phone;
-        payload.address = formData.address;
-        payload.governmentId = formData.governmentId;
-        payload.profilePicture = formData.profilePicture;
+        payload.append("phone", formData.phone);
+        payload.append("address", formData.address || "");
+        payload.append("governmentId", formData.governmentId || "");
       }
 
       if (formData.role === "agent") {
-        payload.phone = formData.phone;
-        payload.location = formData.location;
-        payload.governmentId = formData.governmentId;
-        payload.address = formData.address;
-        payload.dateOfBirth = formData.dateOfBirth;
-        payload.profilePicture = formData.profilePicture;
-        payload.managerId = formData.managerId;
+        payload.append("phone", formData.phone);
+        payload.append("location", formData.location);
+        payload.append("governmentId", formData.governmentId);
+        payload.append("address", formData.address || "");
+        payload.append("dateOfBirth", formData.dateOfBirth || "");
+        payload.append("managerId", formData.managerId);
       }
 
-      const res = await axios.post(`${API_BASE_URL}/api/users`, payload, { withCredentials: true });
+      if (formData.profilePicture) {
+        payload.append("profilePicture", formData.profilePicture);
+      }
+
+      const res = await axios.post(`${API_BASE_URL}/api/users`, payload, {
+        withCredentials: true,
+      });
       setGeneratedPassword(res.data?.generatedPassword || "");
       setDelivery(res.data?.delivery || null);
       resetForm();
@@ -119,6 +129,7 @@ const Users = () => {
       name: user.name || "",
       email: user.email || "",
       role: user.role || "user",
+      managerId: user.managerId || "",
     });
     setShowEditForm(true);
   };
@@ -128,11 +139,20 @@ const Users = () => {
     setSubmitting(true);
     setError("");
     try {
-      await axios.put(
-        `${API_BASE_URL}/api/users/${selectedUserId}`,
-        { name: formData.name, email: formData.email, role: formData.role },
-        { withCredentials: true }
-      );
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      payload.append("email", formData.email);
+      payload.append("role", formData.role);
+      if (formData.role === "agent") {
+        payload.append("managerId", formData.managerId || "");
+      }
+      if (formData.profilePicture) {
+        payload.append("profilePicture", formData.profilePicture);
+      }
+
+      await axios.put(`${API_BASE_URL}/api/users/${selectedUserId}`, payload, {
+        withCredentials: true,
+      });
       resetForm();
       await fetchUsers();
       await fetchManagers();
@@ -213,6 +233,7 @@ const Users = () => {
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
+              <th>Manager</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -220,10 +241,32 @@ const Users = () => {
           <tbody>
             {users.map((user) => (
               <tr key={user._id}>
-                <td>{user.name}</td>
+                <td>
+                  <div className="table-user">
+                    {user.profilePicture ? (
+                      <img
+                        className="table-avatar"
+                        src={user.profilePicture}
+                        alt={`${user.name} profile`}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="table-avatar fallback">
+                        {user.name?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span>{user.name}</span>
+                  </div>
+                </td>
                 <td>{user.email}</td>
                 <td>
                   <span className={`role ${user.role}`}>{user.role}</span>
+                </td>
+                <td>
+                  {user.role === "agent"
+                    ? (user.managerName || user.managerEmail || "Unassigned")
+                    : "â€”"}
                 </td>
                 <td>
                   <span className={`status ${user.isActive === false ? "inactive" : "active"}`}>
@@ -264,6 +307,12 @@ const Users = () => {
                 <option value="agent">Agent</option>
                 <option value="admin">Admin</option>
               </select>
+              <input
+                type="file"
+                accept="image/*"
+                name="profilePicture"
+                onChange={handleChange}
+              />
 
               {(formData.role === "manager" || formData.role === "agent") && (
                 <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required />
@@ -277,13 +326,6 @@ const Users = () => {
                     name="governmentId"
                     placeholder="Government ID"
                     value={formData.governmentId}
-                    onChange={handleChange}
-                  />
-                  <input
-                    type="text"
-                    name="profilePicture"
-                    placeholder="Profile Picture URL"
-                    value={formData.profilePicture}
                     onChange={handleChange}
                   />
                 </>
@@ -310,13 +352,6 @@ const Users = () => {
                   </select>
                   <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
                   <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
-                  <input
-                    type="text"
-                    name="profilePicture"
-                    placeholder="Profile Picture URL"
-                    value={formData.profilePicture}
-                    onChange={handleChange}
-                  />
                 </>
               )}
 
@@ -346,6 +381,22 @@ const Users = () => {
                 <option value="agent">Agent</option>
                 <option value="admin">Admin</option>
               </select>
+              <input
+                type="file"
+                accept="image/*"
+                name="profilePicture"
+                onChange={handleChange}
+              />
+              {formData.role === "agent" && (
+                <select name="managerId" value={formData.managerId} onChange={handleChange}>
+                  <option value="">Unassigned</option>
+                  {managers.map((manager) => (
+                    <option key={manager._id} value={manager._id}>
+                      {manager.name} ({manager.email})
+                    </option>
+                  ))}
+                </select>
+              )}
               <div className="form-buttons">
                 <button type="submit" className="primary-btn" disabled={submitting}>
                   {submitting ? "Saving..." : "Save Changes"}

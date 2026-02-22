@@ -1,4 +1,6 @@
 import User from "../model/user.model.js";
+import Manager from "../model/manager.model.js";
+import Agent from "../model/agent.model.js";
 import jwt from "jsonwebtoken";
 import { redis } from "../lib/redis.js"
 
@@ -21,16 +23,19 @@ const storeRefreshToken = async (userId, refreshToken) => {
 
 
 const setCookies = (res, accessToken, refreshToken) => {
-     res.cookie("accessToken", accessToken, {
+    const isProd = process.env.NODE_ENV === "production";
+    const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
+    };
+
+     res.cookie("accessToken", accessToken, {
+        ...cookieOptions,
         maxAge: 15 * 60 * 1000, // 15 minutes
     });
     res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 }
@@ -103,14 +108,20 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
 	try {
+		const isProd = process.env.NODE_ENV === "production";
+		const cookieOptions = {
+			httpOnly: true,
+			secure: isProd,
+			sameSite: isProd ? "none" : "lax",
+		};
 		const refreshToken = req.cookies.refreshToken;
 		if (refreshToken) {
 			const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 			await redis.del(`refresh_token:${decoded.userId}`);
 		}
 
-		res.clearCookie("accessToken");
-		res.clearCookie("refreshToken");
+		res.clearCookie("accessToken", cookieOptions);
+		res.clearCookie("refreshToken", cookieOptions);
 		res.json({ message: "Logged out successfully" });
 	} catch (error) {
 		console.log("Error in logout controller", error.message);
@@ -120,6 +131,12 @@ export const logout = async (req, res) => {
 
 export const refreshToken = async (req, res) => {
     try {
+        const isProd = process.env.NODE_ENV === "production";
+        const cookieOptions = {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: isProd ? "none" : "lax",
+        };
         const refreshToken = req.cookies.refreshToken;
 
         if (!refreshToken) {
@@ -142,9 +159,7 @@ export const refreshToken = async (req, res) => {
         );
 
         res.cookie("accessToken", accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            ...cookieOptions,
             maxAge: 15 * 60 * 1000,
         });
 
@@ -160,6 +175,101 @@ export const getProfile = async (req, res) => {
 		res.json(req.user);
 	} catch (error) {
 		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+export const updateProfile = async (req, res) => {
+	try {
+		const {
+			name,
+			email,
+			notifications,
+			theme,
+			language,
+			timezone,
+			twoFactor,
+		} = req.body;
+
+		const updates = {};
+		const uploadedProfilePicture = req.file?.path;
+
+		if (typeof name === "string" && name.trim()) {
+			updates.name = name.trim();
+		}
+
+		if (typeof email === "string" && email.trim()) {
+			const normalizedEmail = email.toLowerCase().trim();
+			const existing = await User.findOne({
+				email: normalizedEmail,
+				_id: { $ne: req.user._id },
+			});
+			if (existing) {
+				return res.status(400).json({ message: "Email already in use" });
+			}
+			updates.email = normalizedEmail;
+		}
+
+		if (typeof notifications === "boolean") {
+			updates.notifications = notifications;
+		} else if (typeof notifications === "string") {
+			updates.notifications = notifications.toLowerCase() === "true";
+		}
+
+		if (typeof theme === "string" && ["light", "dark", "auto"].includes(theme)) {
+			updates.theme = theme;
+		}
+
+		if (typeof language === "string" && language.trim()) {
+			updates.language = language.trim();
+		}
+
+		if (typeof timezone === "string" && timezone.trim()) {
+			updates.timezone = timezone.trim();
+		}
+
+		if (typeof twoFactor === "boolean") {
+			updates.twoFactor = twoFactor;
+		} else if (typeof twoFactor === "string") {
+			updates.twoFactor = twoFactor.toLowerCase() === "true";
+		}
+
+		if (uploadedProfilePicture) {
+			updates.profilePicture = uploadedProfilePicture;
+		}
+
+		const currentEmail = req.user.email;
+		const updatedUser = await User.findByIdAndUpdate(req.user._id, updates, {
+			new: true,
+			runValidators: true,
+		}).select("-password");
+
+		if (!updatedUser) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		if (req.user.role === "manager") {
+			await Manager.findOneAndUpdate(
+				{ email: currentEmail },
+				{
+					...(updates.name ? { name: updates.name } : {}),
+					...(updates.email ? { email: updates.email } : {}),
+				}
+			);
+		}
+
+		if (req.user.role === "agent") {
+			await Agent.findOneAndUpdate(
+				{ email: currentEmail },
+				{
+					...(updates.name ? { name: updates.name } : {}),
+					...(updates.email ? { email: updates.email } : {}),
+				}
+			);
+		}
+
+		res.status(200).json(updatedUser);
+	} catch (error) {
+		res.status(500).json({ message: "Failed to update profile" });
 	}
 };
 

@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const ManagerAgents = () => {
   const [agents, setAgents] = useState([]);
@@ -17,6 +19,7 @@ const ManagerAgents = () => {
     governmentId: "",
     dateOfBirth: "",
     address: "",
+    profilePicture: null,
   });
 
   useEffect(() => {
@@ -25,7 +28,7 @@ const ManagerAgents = () => {
 
   const fetchAgents = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/agents", {
+      const res = await fetch(`${API_BASE_URL}/api/agents`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -42,6 +45,11 @@ const ManagerAgents = () => {
   };
 
   const handleChange = (e) => {
+    if (e.target.type === "file") {
+      const file = e.target.files?.[0] || null;
+      setFormData({ ...formData, [e.target.name]: file });
+      return;
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -54,15 +62,26 @@ const ManagerAgents = () => {
 
     try {
       const url = editingAgent
-        ? `http://localhost:4000/api/agents/${editingAgent._id}`
-        : "http://localhost:4000/api/agents";
+        ? `${API_BASE_URL}/api/agents/${editingAgent._id}`
+        : `${API_BASE_URL}/api/agents`;
       const method = editingAgent ? "PUT" : "POST";
+
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      payload.append("email", formData.email);
+      payload.append("phone", formData.phone);
+      payload.append("location", formData.location);
+      payload.append("governmentId", formData.governmentId || "");
+      payload.append("dateOfBirth", formData.dateOfBirth || "");
+      payload.append("address", formData.address || "");
+      if (formData.profilePicture) {
+        payload.append("profilePicture", formData.profilePicture);
+      }
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: payload,
       });
 
       const data = await res.json();
@@ -86,6 +105,7 @@ const ManagerAgents = () => {
           governmentId: "",
           dateOfBirth: "",
           address: "",
+          profilePicture: null,
         });
       } else {
         setError(data.message || "Failed to save agent");
@@ -105,6 +125,7 @@ const ManagerAgents = () => {
       governmentId: agent.governmentId || "",
       dateOfBirth: agent.dateOfBirth || "",
       address: agent.address || "",
+      profilePicture: null,
     });
     setShowForm(true);
   };
@@ -113,7 +134,7 @@ const ManagerAgents = () => {
     if (!window.confirm("Are you sure you want to delete this agent?")) return;
 
     try {
-      const res = await fetch(`http://localhost:4000/api/agents/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/agents/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -132,7 +153,7 @@ const ManagerAgents = () => {
 
   const toggleAgentStatus = async (agent) => {
     try {
-      const res = await fetch(`http://localhost:4000/api/agents/${agent._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/agents/${agent._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -157,7 +178,7 @@ const ManagerAgents = () => {
     setDelivery(null);
 
     try {
-      const res = await fetch(`http://localhost:4000/api/agents/${agent._id}/reset-password`, {
+      const res = await fetch(`${API_BASE_URL}/api/agents/${agent._id}/reset-password`, {
         method: "POST",
         credentials: "include",
       });
@@ -283,6 +304,15 @@ const ManagerAgents = () => {
                   rows="3"
                 />
               </div>
+              <div className="form-group">
+                <label>Profile Picture URL</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  name="profilePicture"
+                  onChange={handleChange}
+                />
+              </div>
               <div className="form-actions">
                 <button type="submit" className="btn-primary">
                   {editingAgent ? "Update" : "Create"}
@@ -301,6 +331,7 @@ const ManagerAgents = () => {
                       governmentId: "",
                       dateOfBirth: "",
                       address: "",
+                      profilePicture: null,
                     });
                   }}
                 >
@@ -332,7 +363,24 @@ const ManagerAgents = () => {
             <tbody>
               {agents.map((agent) => (
                 <tr key={agent._id}>
-                  <td>{agent.name}</td>
+                  <td>
+                    <div className="table-user">
+                      {agent.profilePicture ? (
+                        <img
+                          className="table-avatar"
+                          src={agent.profilePicture}
+                          alt={`${agent.name} profile`}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="table-avatar fallback">
+                          {agent.name?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span>{agent.name}</span>
+                    </div>
+                  </td>
                   <td>{agent.email}</td>
                   <td>{agent.phone}</td>
                   <td>{agent.location}</td>

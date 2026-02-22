@@ -1,14 +1,17 @@
-import { NavLink } from "react-router-dom";
+﻿import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Home, User, Bell } from "lucide-react";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const Navbar = () => {
+  const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(null); // null = loading
   const [notifications, setNotifications] = useState(3); // Mock notification count
 
   const checkAuth = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         credentials: "include",
       });
       console.log("Profile status:", res.status);
@@ -26,7 +29,7 @@ const Navbar = () => {
 
     fetchAuth();
 
-    // 🔁 Listen for login/logout changes
+    // ðŸ” Listen for login/logout changes
     const handleAuthChange = async () => {
       const isAuth = await checkAuth();
       setIsAuthenticated(isAuth);
@@ -66,9 +69,15 @@ const Navbar = () => {
         )}
 
         {!isAuthenticated && (
-          <NavLink to="/login" className="login-btn">
-            Login
-          </NavLink>
+          location.pathname === "/login" ? (
+            <NavLink to="/signup" className="login-btn">
+              Signup
+            </NavLink>
+          ) : (
+            <NavLink to="/login" className="login-btn">
+              Login
+            </NavLink>
+          )
         )}
       </nav>
     </header>

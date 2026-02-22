@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const AgentDetails = () => {
   const { id } = useParams();
@@ -18,7 +20,7 @@ const AgentDetails = () => {
 
   const fetchAgentDetails = async () => {
     try {
-      const res = await fetch(`http://localhost:4000/api/agents/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/agents/${id}`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -36,7 +38,7 @@ const AgentDetails = () => {
 
   const fetchAgentSales = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/sales", {
+      const res = await fetch(`${API_BASE_URL}/api/sales`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -77,7 +79,16 @@ const AgentDetails = () => {
       <div className="agent-profile">
         <div className="profile-header">
           <div className="profile-avatar">
-            {agent.name?.charAt(0).toUpperCase()}
+            {agent.profilePicture ? (
+              <img
+                src={agent.profilePicture}
+                alt={`${agent.name || "Agent"} profile`}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              agent.name?.charAt(0).toUpperCase()
+            )}
           </div>
           <div className="profile-info">
             <h2>{agent.name}</h2>

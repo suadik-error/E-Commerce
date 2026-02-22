@@ -1,12 +1,25 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 
 const ManagerProducts = () => {
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [showSellModal, setShowSellModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sellData, setSellData] = useState({
+    quantity: 1,
+    customerName: "",
+    customerPhone: "",
+    customerAddress: "",
+    notes: "",
+    markSold: true,
+  });
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -15,7 +28,7 @@ const ManagerProducts = () => {
     price: "",
     quantity: "",
     category: "",
-    image: "",
+    image: null,
   });
 
   useEffect(() => {
@@ -41,6 +54,11 @@ const ManagerProducts = () => {
   };
 
   const handleChange = (e) => {
+    if (e.target.type === "file") {
+      const file = e.target.files?.[0] || null;
+      setFormData({ ...formData, [e.target.name]: file });
+      return;
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -55,7 +73,7 @@ const ManagerProducts = () => {
       price: "",
       quantity: "",
       category: "",
-      image: "",
+      image: null,
     });
   };
 
@@ -69,11 +87,22 @@ const ManagerProducts = () => {
         : `${API_BASE_URL}/api/products`;
       const method = editingProduct ? "PUT" : "POST";
 
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      payload.append("brand", formData.brand);
+      payload.append("description", formData.description);
+      payload.append("color", formData.color);
+      payload.append("price", formData.price);
+      payload.append("quantity", formData.quantity);
+      payload.append("category", formData.category);
+      if (formData.image) {
+        payload.append("image", formData.image);
+      }
+
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: payload,
       });
 
       const data = await res.json();
@@ -99,9 +128,62 @@ const ManagerProducts = () => {
       price: product.price,
       quantity: product.quantity ?? 0,
       category: product.category,
-      image: product.image,
+      image: null,
     });
     setShowForm(true);
+  };
+
+  const openSellModal = (product) => {
+    setSelectedProduct(product);
+    setSellData({
+      quantity: 1,
+      customerName: "",
+      customerPhone: "",
+      customerAddress: "",
+      notes: "",
+      markSold: true,
+    });
+    setShowSellModal(true);
+  };
+
+  const closeSellModal = () => {
+    setShowSellModal(false);
+    setSelectedProduct(null);
+  };
+
+  const handleSellSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedProduct) return;
+
+    setError("");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/sales`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          productId: selectedProduct._id,
+          quantity: Number(sellData.quantity || 1),
+          customerName: sellData.customerName,
+          customerPhone: sellData.customerPhone,
+          customerAddress: sellData.customerAddress,
+          notes: sellData.notes,
+          markSold: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Failed to record sale");
+        return;
+      }
+
+      await fetchProducts();
+      closeSellModal();
+    } catch (err) {
+      setError("Failed to record sale");
+    }
   };
 
   const handleDelete = async (id) => {
@@ -126,6 +208,11 @@ const ManagerProducts = () => {
 
   if (loading) return <div className="loading">Loading products...</div>;
 
+  const categories = ["all", ...new Set(products.map((p) => p.category).filter(Boolean))];
+  const filteredProducts = selectedCategory === "all"
+    ? products
+    : products.filter((p) => p.category === selectedCategory);
+
   return (
     <div className="manager-products-page">
       <div className="page-header">
@@ -136,6 +223,20 @@ const ManagerProducts = () => {
       </div>
 
       {error && <div className="error-message">{error}</div>}
+
+      <div className="filter-tabs">
+        <select
+          className="filter-select"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category === "all" ? "All Categories" : category}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {showForm && (
         <div className="modal-overlay">
@@ -177,8 +278,8 @@ const ManagerProducts = () => {
                 </div>
               </div>
               <div className="form-group">
-                <label>Image URL</label>
-                <input type="text" name="image" value={formData.image} onChange={handleChange} placeholder="Enter image URL" />
+                <label>Image</label>
+                <input type="file" accept="image/*" name="image" onChange={handleChange} required={!editingProduct} />
               </div>
               <div className="form-actions">
                 <button type="submit" className="btn-primary">
@@ -194,7 +295,7 @@ const ManagerProducts = () => {
       )}
 
       <div className="products-grid">
-        {products.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <p>No products found. Create your first product.</p>
         ) : (
           <div className="products-table">
@@ -212,11 +313,9 @@ const ManagerProducts = () => {
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) => (
+                {filteredProducts.map((product) => (
                   <tr key={product._id}>
-                    <td>
-                      {product.image ? <img src={product.image} alt={product.name} className="product-thumbnail" /> : <span>No Image</span>}
-                    </td>
+                    <td>â€”</td>
                     <td>{product.name}</td>
                     <td>{product.brand}</td>
                     <td>{product.color}</td>
@@ -226,6 +325,13 @@ const ManagerProducts = () => {
                     <td>
                       <button className="btn-edit" onClick={() => handleEdit(product)}>
                         Edit
+                      </button>
+                      <button
+                        className="btn-confirm"
+                        onClick={() => openSellModal(product)}
+                        disabled={(product.quantity ?? 0) < 1}
+                      >
+                        Sell
                       </button>
                       <button className="btn-delete" onClick={() => handleDelete(product._id)}>
                         Delete
@@ -238,6 +344,76 @@ const ManagerProducts = () => {
           </div>
         )}
       </div>
+
+      {showSellModal && selectedProduct && (
+        <div className="modal-overlay" onClick={closeSellModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Sell Product</h2>
+            <p>{selectedProduct.name}</p>
+            <p>Unit Price: ${selectedProduct.price}</p>
+            <p>Available Stock: {selectedProduct.quantity ?? 0}</p>
+
+            <form onSubmit={handleSellSubmit}>
+              <div className="form-group">
+                <label>Quantity</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={Math.max(1, Number(selectedProduct.quantity || 0))}
+                  value={sellData.quantity}
+                  onChange={(e) => setSellData((prev) => ({ ...prev, quantity: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Customer Name</label>
+                <input
+                  type="text"
+                  value={sellData.customerName}
+                  onChange={(e) => setSellData((prev) => ({ ...prev, customerName: e.target.value }))}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Customer Phone</label>
+                <input
+                  type="text"
+                  value={sellData.customerPhone}
+                  onChange={(e) => setSellData((prev) => ({ ...prev, customerPhone: e.target.value }))}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Customer Address</label>
+                <textarea
+                  rows="2"
+                  value={sellData.customerAddress}
+                  onChange={(e) => setSellData((prev) => ({ ...prev, customerAddress: e.target.value }))}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Notes</label>
+                <textarea
+                  rows="2"
+                  value={sellData.notes}
+                  onChange={(e) => setSellData((prev) => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn-primary">
+                  Record Sale
+                </button>
+                <button type="button" className="btn-secondary" onClick={closeSellModal}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -8,4 +8,3 @@ cloudinary.v2.config({
 
 export default cloudinary.v2;
 
-pLPEp2HOV3vI0fyYx2_iyjXefWg

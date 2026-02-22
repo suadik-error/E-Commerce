@@ -1,8 +1,14 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { User, Mail, Phone, MapPin, FileText, Bell, Palette, Shield, Key, Camera } from "lucide-react";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+
+
 const Settings = () => {
+  const location = useLocation();
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -10,6 +16,7 @@ const Settings = () => {
     notifications: true,
     theme: "light",
   });
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
@@ -23,9 +30,23 @@ const Settings = () => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    const theme = profile.theme || "light";
+    localStorage.setItem("theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [profile.theme]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (tab && ["profile", "preferences", "security"].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
+
   const fetchProfile = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+      const res = await axios.get(`${API_BASE_URL}/api/auth/profile`, {
         withCredentials: true,
       });
       setProfile({ ...profile, ...res.data });
@@ -39,10 +60,25 @@ const Settings = () => {
     setLoading(true);
 
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, profile, {
+      const payload = new FormData();
+      payload.append("name", profile.name);
+      payload.append("email", profile.email);
+      payload.append("notifications", String(profile.notifications));
+      payload.append("theme", profile.theme || "light");
+      if (profile.language) payload.append("language", profile.language);
+      if (profile.timezone) payload.append("timezone", profile.timezone);
+      if (typeof profile.twoFactor === "boolean") {
+        payload.append("twoFactor", String(profile.twoFactor));
+      }
+      if (profilePictureFile) {
+        payload.append("profilePicture", profilePictureFile);
+      }
+
+      await axios.put(`${API_BASE_URL}/api/auth/profile`, payload, {
         withCredentials: true,
       });
       alert("Profile updated successfully!");
+      setProfilePictureFile(null);
     } catch (error) {
       console.error("Failed to update profile");
       alert("Failed to update profile");
@@ -53,6 +89,10 @@ const Settings = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    if (type === "file") {
+      setProfilePictureFile(e.target.files?.[0] || null);
+      return;
+    }
     setProfile({
       ...profile,
       [name]: type === "checkbox" ? checked : value,
@@ -69,7 +109,7 @@ const Settings = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/change-password`,
+        `${API_BASE_URL}/api/auth/change-password`,
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
@@ -126,6 +166,19 @@ const Settings = () => {
               </h2>
 
               <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="profilePicture">
+                    <Camera size={16} />
+                    Profile Picture
+                  </label>
+                  <input
+                    type="file"
+                    id="profilePicture"
+                    name="profilePicture"
+                    accept="image/*"
+                    onChange={handleChange}
+                  />
+                </div>
                 <div className="form-group">
                   <label htmlFor="name">
                     <User size={16} />

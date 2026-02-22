@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+
 
 const AgentProducts = () => {
   const [products, setProducts] = useState([]);
@@ -10,8 +12,10 @@ const AgentProducts = () => {
   const [error, setError] = useState("");
   const [showPickModal, setShowPickModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [formData, setFormData] = useState({
     quantity: 1,
+    markSold: true,
   });
 
   useEffect(() => {
@@ -56,6 +60,7 @@ const AgentProducts = () => {
     setSelectedProduct(product);
     setFormData({
       quantity: 1,
+      markSold: true,
     });
     setShowPickModal(true);
   };
@@ -84,6 +89,7 @@ const AgentProducts = () => {
           productId: selectedProduct._id,
           quantity,
           unitPrice,
+          markSold: true,
         }),
       });
 
@@ -104,13 +110,32 @@ const AgentProducts = () => {
 
   if (loading) return <div className="loading">Loading products...</div>;
 
+  const categories = ["all", ...new Set(products.map((p) => p.category).filter(Boolean))];
+  const filteredProducts = selectedCategory === "all"
+    ? products
+    : products.filter((p) => p.category === selectedCategory);
+
   return (
     <div className="agent-products-page">
       <div className="page-header">
-        <h1>Pick Products</h1>
+        <h1>Sell Products</h1>
       </div>
 
       {error && <div className="error-message">{error}</div>}
+
+      <div className="filter-tabs">
+        <select
+          className="filter-select"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category === "all" ? "All Categories" : category}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="table-card agent-picked-table" style={{ marginBottom: "16px" }}>
         <table className="data-table">
@@ -141,10 +166,10 @@ const AgentProducts = () => {
       </div>
 
       <div className="products-grid agent-products-grid">
-        {products.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <p>No products available.</p>
         ) : (
-          products.map((product) => (
+          filteredProducts.map((product) => (
             <div key={product._id} className="product-card">
               {product.image && <img src={product.image} alt={product.name} className="product-image" />}
               <div className="product-info">
@@ -158,7 +183,7 @@ const AgentProducts = () => {
                   onClick={() => openPickModal(product)}
                   disabled={(product.quantity ?? 0) < 1}
                 >
-                  {(product.quantity ?? 0) < 1 ? "Out of Stock" : "Pick Product"}
+                  {(product.quantity ?? 0) < 1 ? "Out of Stock" : "Sell Product"}
                 </button>
               </div>
             </div>
@@ -169,7 +194,7 @@ const AgentProducts = () => {
       {showPickModal && selectedProduct && (
         <div className="modal-overlay" onClick={closePickModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Pick Product</h2>
+            <h2>Sell Product</h2>
             <p>{selectedProduct.name}</p>
             <p>Unit Price: ${selectedProduct.price}</p>
             <p>Available Stock: {selectedProduct.quantity ?? 0}</p>
@@ -186,7 +211,6 @@ const AgentProducts = () => {
                   required
                 />
               </div>
-
               <div className="form-actions">
                 <button type="submit" className="primary-btn" disabled={submitting}>
                   {submitting ? "Picking..." : "Confirm Pick"}

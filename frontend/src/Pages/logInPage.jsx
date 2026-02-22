@@ -1,7 +1,9 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+
 
 const getRedirectPathByRole = (role) => {
   const normalizedRole = String(role || "").trim().toLowerCase();
@@ -42,7 +44,7 @@ const LoginPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // ⭐ IMPORTANT (cookies)
+        credentials: "include", // â­ IMPORTANT (cookies)
         body: JSON.stringify(formData),
       });
 
@@ -89,7 +91,7 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <span className="icon">📧</span>
+            <span className="icon">ðŸ“§</span>
             <input
               type="email"
               name="email"
@@ -101,7 +103,7 @@ const LoginPage = () => {
           </div>
 
           <div className="input-group">
-            <span className="icon">🔒</span>
+            <span className="icon">ðŸ”’</span>
             <input
               type="password"
               name="password"
@@ -118,7 +120,7 @@ const LoginPage = () => {
         </form>
 
         <p className="signup-text">
-          Don’t have an account?{" "}
+          Donâ€™t have an account?{" "}
           <Link to="/signup">Signup here</Link>
         </p>
       </div>

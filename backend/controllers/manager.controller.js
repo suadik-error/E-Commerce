@@ -8,6 +8,7 @@ import Worker from "../model/worker.model.js";
 export const createManager = async (req, res) => {
     try {
         const { name, email, phone, address, governmentId, profilePicture } = req.body;
+        const uploadedProfilePicture = req.file?.path;
 
         // Check if manager already exists
         const existingManager = await Manager.findOne({ email });
@@ -22,7 +23,7 @@ export const createManager = async (req, res) => {
             phone,
             address,
             governmentId,
-            profilePicture,
+            profilePicture: uploadedProfilePicture || profilePicture,
             admin: req.user._id
         });
 
@@ -78,15 +79,36 @@ export const getManagerById = async (req, res) => {
 export const updateManager = async (req, res) => {
     try {
         const { name, phone, address, isActive, profilePicture, governmentId } = req.body;
+        const uploadedProfilePicture = req.file?.path;
 
         const manager = await Manager.findOneAndUpdate(
             { _id: req.params.id, admin: req.user._id },
-            { name, phone, address, isActive, profilePicture, governmentId },
+            {
+                name,
+                phone,
+                address,
+                isActive,
+                profilePicture: uploadedProfilePicture || profilePicture,
+                governmentId
+            },
             { new: true }
         );
 
         if (!manager) {
             return res.status(404).json({ message: "Manager not found" });
+        }
+
+        const userUpdates = {};
+        if (typeof name === "string" && name.trim()) {
+            userUpdates.name = name.trim();
+        }
+        if (uploadedProfilePicture) {
+            userUpdates.profilePicture = uploadedProfilePicture;
+        } else if (typeof profilePicture === "string") {
+            userUpdates.profilePicture = profilePicture.trim();
+        }
+        if (Object.keys(userUpdates).length > 0) {
+            await User.findOneAndUpdate({ email: manager.email, role: "manager" }, userUpdates);
         }
 
         res.json({

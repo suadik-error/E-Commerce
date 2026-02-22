@@ -1,6 +1,7 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ const handleSubmit = async (e) => {
     setLoading(true);
     setError("");
 
-    const res = await fetch("http://localhost:4000/api/auth/signup", {
+    const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -58,7 +59,7 @@ const handleSubmit = async (e) => {
       throw new Error(data.message || "Signup failed");
     }
 
-    // Success → redirect to login
+    // Success â†’ redirect to login
     navigate("/login");
 
   } catch (err) {
@@ -94,7 +95,7 @@ const handleSubmit = async (e) => {
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <span className="icon">👤</span>
+            <span className="icon">ðŸ‘¤</span>
             <input
               type="text"
               name="name"
@@ -106,7 +107,7 @@ const handleSubmit = async (e) => {
           </div>
 
           <div className="input-group">
-            <span className="icon">📧</span>
+            <span className="icon">ðŸ“§</span>
             <input
               type="email"
               name="email"
@@ -118,7 +119,7 @@ const handleSubmit = async (e) => {
           </div>
 
           <div className="input-group">
-            <span className="icon">🔒</span>
+            <span className="icon">ðŸ”’</span>
             <input
               type="password"
               name="password"
@@ -130,7 +131,7 @@ const handleSubmit = async (e) => {
           </div>
 
           <div className="input-group">
-            <span className="icon">🔒</span>
+            <span className="icon">ðŸ”’</span>
             <input
               type="password"
               name="confirmPassword"

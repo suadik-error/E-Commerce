@@ -17,6 +17,7 @@ const generateRandomPassword = (length = 12) => {
 export const createAgent = async (req, res) => {
     try {
         const { name, email, phone, location, governmentId, dateOfBirth, address, profilePicture } = req.body;
+        const uploadedProfilePicture = req.file?.path;
         const normalizedEmail = String(email || "").toLowerCase().trim();
 
         // Check if agent already exists
@@ -46,6 +47,7 @@ export const createAgent = async (req, res) => {
                 email: normalizedEmail,
                 password: generatedPassword,
                 role: "agent",
+                profilePicture: uploadedProfilePicture || (profilePicture ? String(profilePicture).trim() : ""),
                 createdByAdmin: manager.admin,
             });
         }
@@ -61,7 +63,7 @@ export const createAgent = async (req, res) => {
                 governmentId,
                 dateOfBirth,
                 address,
-                profilePicture,
+                profilePicture: uploadedProfilePicture || profilePicture,
                 manager: manager._id
             });
         } catch (agentError) {
@@ -197,13 +199,23 @@ export const getAgentById = async (req, res) => {
 export const updateAgent = async (req, res) => {
     try {
         const { name, phone, location, address, dateOfBirth, isActive, profilePicture, governmentId, managerId } = req.body;
+        const uploadedProfilePicture = req.file?.path;
         let agent = null;
 
         if (req.user.role === "admin") {
             const managers = await Manager.find({ admin: req.user._id }).select("_id");
             const managerIds = managers.map((m) => m._id);
 
-            const updates = { name, phone, location, address, dateOfBirth, isActive, profilePicture, governmentId };
+            const updates = {
+                name,
+                phone,
+                location,
+                address,
+                dateOfBirth,
+                isActive,
+                profilePicture: uploadedProfilePicture || profilePicture,
+                governmentId
+            };
 
             if (managerId !== undefined) {
                 if (managerId === null || managerId === "") {
@@ -229,13 +241,37 @@ export const updateAgent = async (req, res) => {
             }
             agent = await Agent.findOneAndUpdate(
                 { _id: req.params.id, manager: manager._id },
-                { name, phone, location, address, dateOfBirth, isActive, profilePicture, governmentId },
+                {
+                    name,
+                    phone,
+                    location,
+                    address,
+                    dateOfBirth,
+                    isActive,
+                    profilePicture: uploadedProfilePicture || profilePicture,
+                    governmentId
+                },
                 { new: true }
             );
         }
 
         if (!agent) {
             return res.status(404).json({ message: "Agent not found" });
+        }
+
+        if (agent?.email && (name || uploadedProfilePicture || profilePicture)) {
+            const userUpdates = {};
+            if (typeof name === "string" && name.trim()) {
+                userUpdates.name = name.trim();
+            }
+            if (uploadedProfilePicture) {
+                userUpdates.profilePicture = uploadedProfilePicture;
+            } else if (typeof profilePicture === "string") {
+                userUpdates.profilePicture = profilePicture.trim();
+            }
+            if (Object.keys(userUpdates).length > 0) {
+                await User.findOneAndUpdate({ email: agent.email, role: "agent" }, userUpdates);
+            }
         }
 
         res.json({
@@ -292,6 +328,56 @@ export const getAgentProfile = async (req, res) => {
     } catch (error) {
         console.error("Error getting agent profile:", error);
         res.status(500).json({ message: "Failed to get agent profile" });
+    }
+};
+
+// Update agent profile (Agent only)
+export const updateAgentProfile = async (req, res) => {
+    try {
+        const { name, phone, location, address, profilePicture } = req.body;
+        const uploadedProfilePicture = req.file?.path;
+
+        const updates = {};
+        if (typeof name === "string" && name.trim()) {
+            updates.name = name.trim();
+        }
+        if (typeof phone === "string" && phone.trim()) {
+            updates.phone = phone.trim();
+        }
+        if (typeof location === "string" && location.trim()) {
+            updates.location = location.trim();
+        }
+        if (typeof address === "string") {
+            updates.address = address.trim();
+        }
+        if (uploadedProfilePicture) {
+            updates.profilePicture = uploadedProfilePicture;
+        } else if (typeof profilePicture === "string") {
+            updates.profilePicture = profilePicture.trim();
+        }
+
+        const agent = await Agent.findOneAndUpdate(
+            { email: req.user.email },
+            updates,
+            { new: true, runValidators: true }
+        );
+
+        if (!agent) {
+            return res.status(404).json({ message: "Agent profile not found" });
+        }
+
+        if (updates.name || typeof updates.profilePicture === "string") {
+            const userUpdates = {
+                ...(updates.name ? { name: updates.name } : {}),
+                ...(typeof updates.profilePicture === "string" ? { profilePicture: updates.profilePicture } : {}),
+            };
+            await User.findOneAndUpdate({ _id: req.user._id }, userUpdates);
+        }
+
+        res.status(200).json(agent);
+    } catch (error) {
+        console.error("Error updating agent profile:", error);
+        res.status(500).json({ message: "Failed to update profile" });
     }
 };
 

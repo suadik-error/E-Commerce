@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const formatDateTime = (value) => {
   if (!value) return "N/A";
@@ -33,19 +35,19 @@ const AdminOverview = () => {
   const fetchDashboardData = async () => {
     try {
       // Fetch managers
-      const managersRes = await fetch("http://localhost:4000/api/managers", {
+      const managersRes = await fetch(`${API_BASE_URL}/api/managers`, {
         credentials: "include",
       });
       const managersData = await managersRes.json();
 
       // Fetch agents
-      const agentsRes = await fetch("http://localhost:4000/api/agents", {
+      const agentsRes = await fetch(`${API_BASE_URL}/api/agents`, {
         credentials: "include",
       });
       const agentsData = await agentsRes.json();
 
       // Fetch sales
-      const salesRes = await fetch("http://localhost:4000/api/sales", {
+      const salesRes = await fetch(`${API_BASE_URL}/api/sales`, {
         credentials: "include",
       });
       const salesData = await salesRes.json();

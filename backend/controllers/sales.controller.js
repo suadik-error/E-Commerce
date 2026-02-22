@@ -5,6 +5,24 @@ import Manager from "../model/manager.model.js";
 import Notification from "../model/notification.model.js";
 import User from "../model/user.model.js";
 
+const resolveOwnerAdminId = async (user) => {
+    if (user.role === "admin") return user._id;
+    if (user.role === "manager") {
+        const manager = await Manager.findOne({ email: user.email }).select("admin");
+        return manager?.admin || null;
+    }
+    if (user.role === "agent") {
+        const agent = await Agent.findOne({ email: user.email }).select("manager");
+        if (agent?.manager) {
+            const manager = await Manager.findById(agent.manager).select("admin");
+            if (manager?.admin) return manager.admin;
+        }
+        const agentUser = await User.findOne({ email: user.email, role: "agent" }).select("createdByAdmin");
+        return agentUser?.createdByAdmin || null;
+    }
+    return null;
+};
+
 const getSalesScopeQuery = async (user) => {
     if (user.role === "admin") {
         return { ownerAdmin: user._id };
@@ -58,13 +76,17 @@ const buildActorLabel = async (user) => {
 // Create a new sale (Agent, Manager, or Admin)
 export const createSale = async (req, res) => {
     try {
-        const { productId, quantity, customerName, customerPhone, customerAddress, notes } = req.body;
+        const { productId, quantity, customerName, customerPhone, customerAddress, notes, markSold } = req.body;
         const requestedQuantity = Number(quantity);
+        const ownerAdmin = await resolveOwnerAdminId(req.user);
 
         // Get the product
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
+        }
+        if (!ownerAdmin || String(product.ownerAdmin || "") !== String(ownerAdmin)) {
+            return res.status(403).json({ message: "Access denied" });
         }
 
         if (Number.isNaN(requestedQuantity) || requestedQuantity < 1) {
@@ -90,7 +112,7 @@ export const createSale = async (req, res) => {
             if (!agent) {
                 return res.status(404).json({ message: "Agent profile not found" });
             }
-            manager = await Manager.findById(agent.manager);
+            manager = agent.manager ? await Manager.findById(agent.manager) : null;
         } else if (req.user.role === "manager") {
             manager = await Manager.findOne({ email: req.user.email });
             if (!manager) {
@@ -101,12 +123,17 @@ export const createSale = async (req, res) => {
         }
 
         // Create the sale
-        const ownerAdmin = manager ? manager.admin : req.user._id;
+        const finalOwnerAdmin = manager ? manager.admin : ownerAdmin || req.user._id;
+        const shouldMarkSold = String(markSold).toLowerCase() === "true";
+        const initialProductStatus = shouldMarkSold ? "sold" : "picked";
+        const initialPaymentStatus = "pending";
+        const soldAt = shouldMarkSold ? new Date() : null;
+
         const sale = await Sales.create({
             product: productId,
             agent: agent ? agent._id : null,
             manager: manager ? manager._id : null,
-            ownerAdmin,
+            ownerAdmin: finalOwnerAdmin,
             quantity: requestedQuantity,
             unitPrice: finalUnitPrice,
             totalPrice,
@@ -114,13 +141,20 @@ export const createSale = async (req, res) => {
             customerPhone: customerPhone || "",
             customerAddress: customerAddress || "",
             notes,
-            productStatus: "picked", // Product picked by agent
-            paymentStatus: "pending" // Payment pending
+            productStatus: initialProductStatus,
+            paymentStatus: initialPaymentStatus,
+            soldAt,
         });
 
-        // Reserve stock at pick time
+        // Reserve stock at pick/sell time
         product.quantity -= requestedQuantity;
         await product.save();
+
+        if (shouldMarkSold && agent) {
+            await Agent.findByIdAndUpdate(agent._id, {
+                $inc: { totalSales: 1, totalRevenue: totalPrice }
+            });
+        }
 
         // Notify manager
         if (manager) {

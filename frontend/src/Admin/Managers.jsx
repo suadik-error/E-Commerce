@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const Managers = () => {
   const [managers, setManagers] = useState([]);
@@ -11,6 +13,7 @@ const Managers = () => {
     name: "",
     email: "",
     phone: "",
+    profilePicture: null,
   });
 
   useEffect(() => {
@@ -19,7 +22,7 @@ const Managers = () => {
 
   const fetchManagers = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/managers", {
+      const res = await fetch(`${API_BASE_URL}/api/managers`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -36,6 +39,11 @@ const Managers = () => {
   };
 
   const handleChange = (e) => {
+    if (e.target.type === "file") {
+      const file = e.target.files?.[0] || null;
+      setFormData({ ...formData, [e.target.name]: file });
+      return;
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -45,15 +53,22 @@ const Managers = () => {
 
     try {
       const url = editingManager
-        ? `http://localhost:4000/api/managers/${editingManager._id}`
-        : "http://localhost:4000/api/managers";
+        ? `${API_BASE_URL}/api/managers/${editingManager._id}`
+        : `${API_BASE_URL}/api/managers`;
       const method = editingManager ? "PUT" : "POST";
+
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      payload.append("email", formData.email);
+      payload.append("phone", formData.phone);
+      if (formData.profilePicture) {
+        payload.append("profilePicture", formData.profilePicture);
+      }
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: payload,
       });
 
       const data = await res.json();
@@ -62,7 +77,7 @@ const Managers = () => {
         fetchManagers();
         setShowForm(false);
         setEditingManager(null);
-        setFormData({ name: "", email: "", phone: "" });
+        setFormData({ name: "", email: "", phone: "", profilePicture: null });
       } else {
         setError(data.message || "Failed to save manager");
       }
@@ -77,6 +92,7 @@ const Managers = () => {
       name: manager.name,
       email: manager.email,
       phone: manager.phone,
+      profilePicture: null,
     });
     setShowForm(true);
   };
@@ -85,7 +101,7 @@ const Managers = () => {
     if (!window.confirm("Are you sure you want to delete this manager?")) return;
 
     try {
-      const res = await fetch(`http://localhost:4000/api/managers/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/managers/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -149,6 +165,15 @@ const Managers = () => {
                   required
                 />
               </div>
+              <div className="form-group">
+                <label>Profile Picture URL</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  name="profilePicture"
+                  onChange={handleChange}
+                />
+              </div>
               <div className="form-actions">
                 <button type="submit" className="btn-primary">
                   {editingManager ? "Update" : "Create"}
@@ -159,7 +184,7 @@ const Managers = () => {
                   onClick={() => {
                     setShowForm(false);
                     setEditingManager(null);
-                    setFormData({ name: "", email: "", phone: "" });
+                    setFormData({ name: "", email: "", phone: "", profilePicture: null });
                   }}
                 >
                   Cancel
@@ -187,7 +212,24 @@ const Managers = () => {
             <tbody>
               {managers.map((manager) => (
                 <tr key={manager._id}>
-                  <td>{manager.name}</td>
+                  <td>
+                    <div className="table-user">
+                      {manager.profilePicture ? (
+                        <img
+                          className="table-avatar"
+                          src={manager.profilePicture}
+                          alt={`${manager.name} profile`}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="table-avatar fallback">
+                          {manager.name?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span>{manager.name}</span>
+                    </div>
+                  </td>
                   <td>{manager.email}</td>
                   <td>{manager.phone}</td>
                   <td>{new Date(manager.createdAt).toLocaleDateString()}</td>

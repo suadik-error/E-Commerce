@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 
 const AgentSales = () => {
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

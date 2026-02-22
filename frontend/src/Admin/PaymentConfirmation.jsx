@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const formatDateTime = (value) => {
   if (!value) return "N/A";
@@ -26,7 +28,7 @@ const PaymentConfirmation = () => {
 
   const fetchSales = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/sales", {
+      const res = await fetch(`${API_BASE_URL}/api/sales`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -44,7 +46,7 @@ const PaymentConfirmation = () => {
 
   const handleConfirmPayment = async (saleId) => {
     try {
-      const res = await fetch(`http://localhost:4000/api/sales/${saleId}/confirm-payment`, {
+      const res = await fetch(`${API_BASE_URL}/api/sales/${saleId}/confirm-payment`, {
         method: "PUT",
         credentials: "include",
       });

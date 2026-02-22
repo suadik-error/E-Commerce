@@ -1,5 +1,7 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import axios from "axios";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 const AdminForm = () => {
   const [loading, setLoading] = useState(false);
@@ -49,7 +51,7 @@ const AdminForm = () => {
       setMessage("");
 
       await axios.post(
-        "http://localhost:4000/api/admin-request",
+        `${API_BASE_URL}/api/admin-request`,
         data,
         {
           withCredentials: true,

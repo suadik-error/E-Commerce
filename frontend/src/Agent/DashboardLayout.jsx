@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
+LayoutDashboard,
   Package,
   ShoppingCart,
   LogOut,
   Bell,
   User
 } from "lucide-react";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 
 const AgentDashboardLayout = () => {
   const navigate = useNavigate();
@@ -22,7 +25,7 @@ const AgentDashboardLayout = () => {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/auth/profile", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -36,7 +39,7 @@ const AgentDashboardLayout = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/notifications", {
+      const res = await fetch(`${API_BASE_URL}/api/notifications`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -50,7 +53,7 @@ const AgentDashboardLayout = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:4000/api/auth/logout", {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
         credentials: "include",
       });
       navigate("/login");
@@ -61,7 +64,7 @@ const AgentDashboardLayout = () => {
 
   const markAsRead = async (id) => {
     try {
-      await fetch(`http://localhost:4000/api/notifications/${id}/read`, {
+      await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
         method: "PUT",
         credentials: "include",
       });
@@ -130,6 +133,13 @@ const AgentDashboardLayout = () => {
               {unreadCount > 0 && (
                 <span className="notification-badge">{unreadCount}</span>
               )}
+            </button>
+            <button
+              className="notification-btn"
+              onClick={() => navigate("/agent/products")}
+              title="Sell Product"
+            >
+              <ShoppingCart size={20} />
             </button>
             {showNotifications && (
               <div className="notifications-dropdown">

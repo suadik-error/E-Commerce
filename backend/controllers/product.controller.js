@@ -4,6 +4,7 @@ import Product from "../model/product.model.js";
 import Request from "../model/request.model.js";
 import Manager from "../model/manager.model.js";
 import Agent from "../model/agent.model.js";
+import User from "../model/user.model.js";
 
 const resolveOwnerAdminId = async (user) => {
     if (user.role === "admin") return user._id;
@@ -13,9 +14,12 @@ const resolveOwnerAdminId = async (user) => {
     }
     if (user.role === "agent") {
         const agent = await Agent.findOne({ email: user.email }).select("manager");
-        if (!agent) return null;
-        const manager = await Manager.findById(agent.manager).select("admin");
-        return manager?.admin || null;
+        if (agent?.manager) {
+            const manager = await Manager.findById(agent.manager).select("admin");
+            if (manager?.admin) return manager.admin;
+        }
+        const agentUser = await User.findOne({ email: user.email, role: "agent" }).select("createdByAdmin");
+        return agentUser?.createdByAdmin || null;
     }
     return null;
 };
@@ -63,27 +67,21 @@ export const getFeaturedProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
     try {
-        const { name, brand, description, color, price, quantity, image, category } = req.body;
+        const { name, brand, description, color, price, quantity, category } = req.body;
+        const uploadedImage = req.file?.path;
         const parsedQuantity = Number(quantity);
         const ownerAdmin = await resolveOwnerAdminId(req.user);
-        let finalImage = image || "";
 
         if (!ownerAdmin) {
             return res.status(403).json({ message: "Access denied" });
         }
 
-        if (Number.isNaN(parsedQuantity) || parsedQuantity < 0) {
-            return res.status(400).json({ message: "Quantity must be a number greater than or equal to 0" });
+        if (!uploadedImage) {
+            return res.status(400).json({ message: "Image is required" });
         }
 
-        if (image) {
-            try {
-                const cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
-                finalImage = cloudinaryResponse?.secure_url || image;
-            } catch (uploadError) {
-                // Fallback to provided URL/base64 if cloudinary is not configured.
-                finalImage = image;
-            }
+        if (Number.isNaN(parsedQuantity) || parsedQuantity < 0) {
+            return res.status(400).json({ message: "Quantity must be a number greater than or equal to 0" });
         }
 
         const product = await Product.create({
@@ -93,7 +91,7 @@ export const createProduct = async (req, res) => {
             color,
             price,
             quantity: parsedQuantity,
-            image: finalImage,
+            image: uploadedImage,
             category,
             ownerAdmin,
         });
@@ -136,23 +134,16 @@ export const deleteProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, brand, description, color, price, quantity, image, category } = req.body;
+        const { name, brand, description, color, price, quantity, category } = req.body;
         const ownerAdmin = await resolveOwnerAdminId(req.user);
+        const uploadedImage = req.file?.path;
 
         const existingProduct = await Product.findOne({ _id: id, ownerAdmin });
         if (!existingProduct) {
             return res.status(404).json({ message: "Product not found" });
         }
 
-        let finalImage = existingProduct.image;
-        if (typeof image === "string" && image.trim()) {
-            try {
-                const cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
-                finalImage = cloudinaryResponse?.secure_url || image;
-            } catch (uploadError) {
-                finalImage = image;
-            }
-        }
+        const finalImage = uploadedImage || existingProduct.image;
 
         const parsedQuantity = quantity === undefined ? existingProduct.quantity : Number(quantity);
         if (Number.isNaN(parsedQuantity) || parsedQuantity < 0) {
