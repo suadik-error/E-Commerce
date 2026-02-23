@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Home, User, Bell } from "lucide-react";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const Navbar = () => {
   const location = useLocation();
