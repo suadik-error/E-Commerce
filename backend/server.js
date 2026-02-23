@@ -1,5 +1,7 @@
 import express from "express"
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -18,18 +20,13 @@ import notificationRoutes from "./routes/notification.routes.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 4000;
-const CLIENT_URL = process.env.CLIENT_URL;
-const allowedOrigins = [CLIENT_URL, "http://localhost:5173"].filter(Boolean);
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error("Not allowed by CORS"));
-  },
+  origin: true,
   credentials: true,
 }));
 
@@ -48,6 +45,12 @@ app.use("/api/workers", workerRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.get("/healthz", (_req, res) => res.status(200).json({ ok: true }));
+
+const frontendDist = path.join(__dirname, "../frontend/dist");
+app.use(express.static(frontendDist));
+app.get("/{*any}", (_req, res) => {
+  res.sendFile(path.join(frontendDist, "index.html"));
+});
 
 
 app.listen(PORT, () => {
