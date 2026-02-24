@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "backend/server.js",
   "scripts": {
+    "install": "npm install --legacy-peer-deps && npm install --prefix frontend",
     "dev": "nodemon backend/server.js",
     "start": "node backend/server.js",
     "build": "npm install --legacy-peer-deps && npm install --prefix frontend && npm run build --prefix frontend"
