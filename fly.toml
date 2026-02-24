@@ -1,8 +1,8 @@
-app = "app-winter-bush-7722"
+app = "app-thrumming-glade-1120"
 primary_region = "iad"
 
 [build]
-  image = "app-winter-bush-7722"
+  image = "app-thrumming-glade-1120"
 
 [http_service]
   internal_port = 3000
