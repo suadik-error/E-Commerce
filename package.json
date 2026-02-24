@@ -6,7 +6,10 @@
     "install": "npm install --legacy-peer-deps && npm install --prefix frontend",
     "dev": "nodemon backend/server.js",
     "start": "node backend/server.js",
-    "build": "npm install --legacy-peer-deps && npm install --prefix frontend && npm run build --prefix frontend"
+    "build": "NODE_OPTIONS=--max-old-space-size=1024 npm install --legacy-peer-deps && npm install --prefix frontend && npm run build --prefix frontend"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "keywords": [],
   "author": "",
