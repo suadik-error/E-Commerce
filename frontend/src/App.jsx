@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import SignUpPage from "./Pages/SignupPage";
-import LoginPage from "./Pages/LoginPage";
-import AdminForm from "./Pages/AdminForm";
+import SignUpPage from "./Pages/SignupPage.jsx";
+import LoginPage from "./Pages/LoginPage.jsx";
+import AdminForm from "./Pages/AdminForm.jsx";
 
 import Navbar from "./Components/Navbar";
 import RequireAuth from "./Components/RequireAuth.jsx";
