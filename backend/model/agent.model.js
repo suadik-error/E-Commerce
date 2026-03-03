@@ -21,34 +21,28 @@ const agentSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        // Government issued ID document
         governmentId: {
             type: String,
             required: true,
         },
-        // Personal details
         dateOfBirth: {
             type: Date,
         },
         address: {
             type: String,
         },
-        // Link to manager who created this agent
         manager: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Manager",
             default: null
         },
-        // Status
         isActive: {
             type: Boolean,
             default: true
         },
-        // Profile picture
         profilePicture: {
             type: String,
         },
-        // Performance metrics
         totalSales: {
             type: Number,
             default: 0
@@ -57,7 +51,6 @@ const agentSchema = new mongoose.Schema(
             type: Number,
             default: 0
         },
-        // Featured status
         isFeatured: {
             type: Boolean,
             default: false,

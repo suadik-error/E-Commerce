@@ -34,12 +34,10 @@ const Sidebar = () => {
 
   return (
     <aside className="sidebar">
-      {/* LOGO */}
       <div className="sidebar-logo">
         <h2>Suad<span>Admin</span></h2>
       </div>
 
-      {/* MENU */}
       <nav className="sidebar-menu">
         <NavLink to="/dashboard" end>
           <LayoutDashboard size={20} />
@@ -87,7 +85,6 @@ const Sidebar = () => {
         </NavLink>
       </nav>
 
-      {/* FOOTER */}
       <div className="sidebar-footer">
         <button className="logout-btn" onClick={handleLogout}>
           <LogOut size={18} />

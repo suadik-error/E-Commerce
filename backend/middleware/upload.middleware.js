@@ -31,17 +31,17 @@ const productStorage = new CloudinaryStorage({
 
 const uploadAdminDocs = multer({
   storage: adminRequestStorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 const uploadProfile = multer({
   storage: profileStorage,
-  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB
+  limits: { fileSize: 3 * 1024 * 1024 },
 });
 
 const uploadProduct = multer({
   storage: productStorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 export { uploadProfile };

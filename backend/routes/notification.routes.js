@@ -10,10 +10,8 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication
 router.use(protectRoute);
 
-// Notification routes
 router.get("/", getNotifications);
 router.get("/unread-count", getUnreadCount);
 router.put("/:id/read", markAsRead);

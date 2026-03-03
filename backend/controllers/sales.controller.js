@@ -73,14 +73,12 @@ const buildActorLabel = async (user) => {
     return "User";
 };
 
-// Create a new sale (Agent, Manager, or Admin)
 export const createSale = async (req, res) => {
     try {
         const { productId, quantity, customerName, customerPhone, customerAddress, notes, markSold } = req.body;
         const requestedQuantity = Number(quantity);
         const ownerAdmin = await resolveOwnerAdminId(req.user);
 
-        // Get the product
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
@@ -99,11 +97,9 @@ export const createSale = async (req, res) => {
             });
         }
 
-        // Calculate total price
         const finalUnitPrice = Number(product.price);
         const totalPrice = finalUnitPrice * requestedQuantity;
 
-        // Get the agent (if agent is making the sale)
         let agent = null;
         let manager = null;
 
@@ -118,11 +114,8 @@ export const createSale = async (req, res) => {
             if (!manager) {
                 return res.status(404).json({ message: "Manager profile not found" });
             }
-        } else if (req.user.role === "admin") {
-            // Admin can create sale without agent
         }
 
-        // Create the sale
         const finalOwnerAdmin = manager ? manager.admin : ownerAdmin || req.user._id;
         const shouldMarkSold = String(markSold).toLowerCase() === "true";
         const initialProductStatus = shouldMarkSold ? "sold" : "picked";
@@ -146,7 +139,6 @@ export const createSale = async (req, res) => {
             soldAt,
         });
 
-        // Reserve stock at pick/sell time
         product.quantity -= requestedQuantity;
         await product.save();
 
@@ -156,7 +148,6 @@ export const createSale = async (req, res) => {
             });
         }
 
-        // Notify manager
         if (manager) {
             const managerUserId = await getManagerUserId(manager);
             if (managerUserId) {
@@ -174,7 +165,6 @@ export const createSale = async (req, res) => {
             }
         }
 
-        // Also notify admin
         const adminUser = await User.findById(ownerAdmin);
         if (adminUser) {
             await Notification.create({
@@ -200,7 +190,6 @@ export const createSale = async (req, res) => {
     }
 };
 
-// Get all sales (Admin, Manager, Agent)
 export const getAllSales = async (req, res) => {
     try {
         const scopeQuery = await getSalesScopeQuery(req.user);
@@ -221,7 +210,6 @@ export const getAllSales = async (req, res) => {
     }
 };
 
-// Get single sale by ID
 export const getSaleById = async (req, res) => {
     try {
         const scopeQuery = await getSalesScopeQuery(req.user);
@@ -245,7 +233,6 @@ export const getSaleById = async (req, res) => {
     }
 };
 
-// Update sale (confirm product sold, payment received, etc.)
 export const updateSale = async (req, res) => {
     try {
         const { productStatus, paymentStatus, notes, soldQuantity } = req.body;
@@ -264,12 +251,10 @@ export const updateSale = async (req, res) => {
 
         const previousProductStatus = sale.productStatus;
 
-        // Update fields
         if (productStatus) sale.productStatus = productStatus;
         if (paymentStatus) sale.paymentStatus = paymentStatus;
         if (notes) sale.notes = notes;
 
-        // If payment is confirmed
         if (paymentStatus === "paid") {
             sale.paymentConfirmedByManager = true;
             sale.paymentConfirmedAt = new Date();
@@ -277,7 +262,6 @@ export const updateSale = async (req, res) => {
             const actorLabel = await buildActorLabel(req.user);
             const notifications = [];
 
-            // Notify the owner admin for this specific sale.
             const ownerAdminUser = await User.findById(sale.ownerAdmin).select("_id");
             if (ownerAdminUser && String(ownerAdminUser._id) !== String(req.user._id)) {
                 notifications.push({
@@ -294,7 +278,6 @@ export const updateSale = async (req, res) => {
                 });
             }
 
-            // Notify manager if this sale has a manager and actor is not the manager user.
             if (sale.manager) {
                 const managerDoc = await Manager.findById(sale.manager);
                 const managerUserId = await getManagerUserId(managerDoc);
@@ -319,7 +302,6 @@ export const updateSale = async (req, res) => {
             }
         }
 
-        // If product is sold
         if (productStatus === "sold") {
             const parsedSoldQuantity = soldQuantity === undefined ? sale.quantity : Number(soldQuantity);
 
@@ -331,7 +313,6 @@ export const updateSale = async (req, res) => {
                 return res.status(400).json({ message: "soldQuantity cannot exceed picked quantity" });
             }
 
-            // Partial sale: split picked record into sold + remaining picked quantity.
             if (parsedSoldQuantity < sale.quantity) {
                 const soldTotalPrice = Number(sale.unitPrice) * parsedSoldQuantity;
                 const remainingQuantity = sale.quantity - parsedSoldQuantity;
@@ -375,13 +356,11 @@ export const updateSale = async (req, res) => {
                 sale.soldAt = new Date();
             }
 
-            // Update agent performance
             if (sale.agent) {
                 await Agent.findByIdAndUpdate(sale.agent._id, {
                     $inc: { totalSales: 1, totalRevenue: sale.totalPrice }
                 });
 
-                // Notify manager
                 const manager = await Manager.findById(sale.manager);
                 if (manager) {
                     const managerUserId = await getManagerUserId(manager);
@@ -402,7 +381,6 @@ export const updateSale = async (req, res) => {
             }
         }
 
-        // If product is returned
         if (productStatus === "returned") {
             sale.soldAt = null;
             if (previousProductStatus !== "returned" && sale.product) {
@@ -411,7 +389,6 @@ export const updateSale = async (req, res) => {
                 });
             }
 
-            // Notify manager
             const manager = await Manager.findById(sale.manager);
             if (manager) {
                 const managerUserId = await getManagerUserId(manager);
@@ -443,7 +420,6 @@ export const updateSale = async (req, res) => {
     }
 };
 
-// Confirm payment (Admin only)
 export const confirmPayment = async (req, res) => {
     try {
         const sale = await Sales.findById(req.params.id)
@@ -464,7 +440,6 @@ export const confirmPayment = async (req, res) => {
         sale.paymentConfirmedAt = new Date();
         await sale.save();
 
-        // Notify manager
         if (sale.manager) {
             const managerUserId = await getManagerUserId(sale.manager);
             if (managerUserId) {
@@ -482,7 +457,6 @@ export const confirmPayment = async (req, res) => {
             }
         }
 
-        // Notify agent
         if (sale.agent) {
             const agentUserId = await getAgentUserId(sale.agent);
             if (agentUserId) {
@@ -510,7 +484,6 @@ export const confirmPayment = async (req, res) => {
     }
 };
 
-// Delete sale (Admin only)
 export const deleteSale = async (req, res) => {
     try {
         const sale = await Sales.findOneAndDelete({ _id: req.params.id, ownerAdmin: req.user._id });
@@ -526,7 +499,6 @@ export const deleteSale = async (req, res) => {
     }
 };
 
-// Get sales statistics
 export const getSalesStats = async (req, res) => {
     try {
         let query = {};

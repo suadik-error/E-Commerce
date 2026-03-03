@@ -26,7 +26,6 @@ const workerSchema = new mongoose.Schema({
         ref: "Manager",
         default: null
     },
-    // Worker specific fields
     department: {
         type: String,
         default: "general"

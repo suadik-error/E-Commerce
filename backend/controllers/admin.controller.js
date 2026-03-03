@@ -35,9 +35,8 @@ export const getStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const totalProducts = await Product.countDocuments();
-    // Assuming no orders model yet, set to 0 or calculate from requests if applicable
-    const totalOrders = 0; // Placeholder, update when orders are implemented
-    const totalRevenue = 0; // Placeholder, calculate from orders
+    const totalOrders = 0;
+    const totalRevenue = 0;
 
     res.json({
       totalUsers,

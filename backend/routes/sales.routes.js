@@ -12,10 +12,8 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication
 router.use(protectRoute);
 
-// Sales routes
 router.post("/", createSale);
 router.get("/", getAllSales);
 router.get("/stats", getSalesStats);

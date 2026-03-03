@@ -20,22 +20,18 @@ const managerSchema = new mongoose.Schema({
     address: {
         type: String,
     },
-    // Link to the admin who created this manager
     admin: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
-    // Status
     isActive: {
         type: Boolean,
         default: true
     },
-    // Profile picture
     profilePicture: {
         type: String,
     },
-    // Government issued ID
     governmentId: {
         type: String,
     },

@@ -17,13 +17,11 @@ import Analytics from "./Components/Analytics.jsx";
 import Messages from "./Components/Messages.jsx";
 import Security from "./Components/Security.jsx";
 
-// Admin Dashboard Components
 import AdminOverview from "./Admin/Overview.jsx";
 import Managers from "./Admin/Managers.jsx";
 import AgentDetails from "./Admin/AgentDetails.jsx";
 import PaymentConfirmation from "./Admin/PaymentConfirmation.jsx";
 
-// Manager Dashboard
 import ManagerDashboardLayout from "./Manager/DashboardLayout.jsx";
 import ManagerAgents from "./Manager/Agents.jsx";
 import ManagerWorkers from "./Manager/Workers.jsx";
@@ -32,7 +30,6 @@ import ManagerSales from "./Manager/Sales.jsx";
 import ManagerPayments from "./Manager/Payments.jsx";
 import ManagerOverview from "./Manager/Overview.jsx";
 
-// Agent Dashboard
 import AgentDashboardLayout from "./Agent/DashboardLayout.jsx";
 import AgentProducts from "./Agent/Products.jsx";
 import AgentSales from "./Agent/Sales.jsx";
@@ -55,7 +52,6 @@ function App() {
           <Route path="/orders" element={<div>Orders Page</div>} />
           <Route path="/cart" element={<div>Cart Page</div>} />
 
-          {/* Admin Dashboard Routes */}
           <Route
             path="/dashboard"
             element={
@@ -79,7 +75,6 @@ function App() {
             <Route path="settings" element={<Settings />} />
           </Route>
 
-          {/* Manager Dashboard Routes */}
           <Route
             path="/manager"
             element={
@@ -97,7 +92,6 @@ function App() {
             <Route path="settings" element={<Settings />} />
           </Route>
 
-          {/* Agent Dashboard Routes */}
           <Route
             path="/agent"
             element={

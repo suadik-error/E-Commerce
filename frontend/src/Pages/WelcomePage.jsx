@@ -5,7 +5,6 @@ const WelcomePage = () => {
 
   return (
     <div>
-      {/* HERO SECTION */}
       <section className="hero">
         <div className="overlay">
           <h1>Welcome to Our E-Commerce Platform</h1>
@@ -23,7 +22,6 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      {/* PARTNERS */}
       <section className="partners">
         <h3>Trusted by Our Partners</h3>
         <div className="logos">
@@ -34,7 +32,6 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="footer">
         <p>© {new Date().getFullYear()} Suad Business Tech</p>
       </footer>

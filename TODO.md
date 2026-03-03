@@ -1,24 +1,44 @@
-# Deployment Plan
+# TODO: Remove All Comments from Code
 
-## Tasks
-- [ ] Fix Dockerfile to properly copy root package.json for production dependencies
-- [ ] Create production environment variables checklist
-- [ ] Verify health check endpoint works
-- [ ] Deploy to Fly.io
+## Backend Files
+- [ ] backend/server.js
+- [ ] backend/lib/db.js
+- [ ] backend/lib/redis.js
+- [ ] backend/lib/cloudinary.js
+- [ ] backend/lib/credential-delivery.js
+- [ ] backend/middleware/auth.middleware.js
+- [ ] backend/middleware/upload.middleware.js
+- [ ] backend/routes/auth.routes.js
+- [ ] backend/routes/user.routes.js
+- [ ] backend/routes/admin.routes.js
+- [ ] backend/routes/product.route.js
+- [ ] backend/routes/manager.routes.js
+- [ ] backend/routes/agent.routes.js
+- [ ] backend/routes/worker.routes.js
+- [ ] backend/routes/sales.routes.js
+- [ ] backend/routes/notification.routes.js
+- [ ] backend/controllers/auth.controller.js
+- [ ] backend/controllers/user.controller.js
+- [ ] backend/controllers/admin.controller.js
+- [ ] backend/controllers/manager.controller.js
+- [ ] backend/controllers/agent.controller.js
+- [ ] backend/controllers/worker.controller.js
+- [ ] backend/controllers/sales.controller.js
+- [ ] backend/controllers/product.controller.js
+- [ ] backend/controllers/notification.controller.js
+- [ ] backend/model/*.js (all model files)
 
-## Environment Variables Required (to be set on Fly.io)
-- MONGO_URL
-- JWT_SECRET
-- UPSTASH_REDIS_URL (optional)
-- CLOUDINARY_CLOUD_NAME (optional)
-- CLOUDINARY_API_KEY (optional)
-- CLOUDINARY_API_SECRET (optional)
-- RESEND_API_KEY (optional)
-- RESEND_FROM_EMAIL (optional)
-- TWILIO_ACCOUNT_SID (optional)
-- TWILIO_AUTH_TOKEN (optional)
-- TWILIO_FROM_NUMBER (optional)
-- STRIPE_SECRET_KEY (optional)
-- STRIPE_WEBHOOK_SECRET (optional)
+## Frontend Files
+- [ ] frontend/vite.config.js
+- [ ] frontend/src/App.jsx
+- [ ] frontend/src/main.jsx
+- [ ] frontend/src/Pages/*.jsx
+- [ ] frontend/src/Admin/*.jsx
+- [ ] frontend/src/Manager/*.jsx
+- [ ] frontend/src/Agent/*.jsx
+- [ ] frontend/src/Components/*.jsx
 
-## Status: In Progress
+## CSS Files
+- [ ] frontend/src/styles/*.css
+
+## Completed

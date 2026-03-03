@@ -43,7 +43,6 @@ const AgentDetails = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        // Filter sales for this agent
         const agentSales = data.filter((sale) => sale.agent && sale.agent._id === id);
         setSales(agentSales);
       }

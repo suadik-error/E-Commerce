@@ -321,7 +321,6 @@ const AgentProfile = () => {
         </div>
       )}
 
-      {/* Performance Stats */}
       <div className="performance-card">
         <h3>Performance</h3>
         <div className="stats-grid">

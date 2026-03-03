@@ -5,7 +5,6 @@ dotenv.config();
 
 export const redis = new Redis(process.env.UPSTASH_REDIS_URL);
 
-// Add error handling to prevent unhandled error events
 redis.on('error', (err) => {
   console.error('Redis connection error:', err.message);
 });

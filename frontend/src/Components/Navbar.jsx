@@ -6,8 +6,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const Navbar = () => {
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState(null); // null = loading
-  const [notifications, setNotifications] = useState(3); // Mock notification count
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [notifications, setNotifications] = useState(3);
 
   const checkAuth = async () => {
     try {
@@ -29,7 +29,6 @@ const Navbar = () => {
 
     fetchAuth();
 
-    // ðŸ” Listen for login/logout changes
     const handleAuthChange = async () => {
       const isAuth = await checkAuth();
       setIsAuthenticated(isAuth);
@@ -39,7 +38,7 @@ const Navbar = () => {
     return () => window.removeEventListener("authChanged", handleAuthChange);
   }, []);
 
-  if (isAuthenticated === null) return <div>Loading...</div>; // avoid flicker
+  if (isAuthenticated === null) return <div>Loading...</div>;
 
   return (
     <header className="navbar">

@@ -36,7 +36,6 @@ const DashboardHome = () => {
       <h1>Dashboard Overview</h1>
       <p className="subtitle">Monitor your platform performance</p>
 
-      {/* STAT CARDS */}
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Total Users</h3>
@@ -58,20 +57,19 @@ const DashboardHome = () => {
 
         <div className="stat-card highlight">
           <h3>Revenue</h3>
-          <p className="stat-number">â‚µ{stats.totalRevenue.toLocaleString()}</p>
+          <p className="stat-number">₵{stats.totalRevenue.toLocaleString()}</p>
           <span className="stat-label">Total earned</span>
         </div>
       </div>
 
-      {/* RECENT ACTIVITY */}
       <div className="activity-card">
         <h2>Recent Activity</h2>
 
         <ul>
-          <li>ðŸŸ¢ New user registered</li>
-          <li>ðŸ“¦ Product â€œSamsung A14â€ added</li>
-          <li>ðŸ’³ Payment received â‚µ1,200</li>
-          <li>ðŸ‘¤ Manager account approved</li>
+          <li>🟢 New user registered</li>
+          <li>📦 Product "Samsung A14" added</li>
+          <li>💳 Payment received ₵1,200</li>
+          <li>👤 Manager account approved</li>
         </ul>
       </div>
     </div>

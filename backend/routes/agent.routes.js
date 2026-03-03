@@ -14,14 +14,11 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication
 router.use(protectRoute);
 
-// Profile route for the logged-in agent/admin/manager
 router.get("/profile/me", checkRole(["agent", "admin", "manager"]), getAgentProfile);
 router.put("/profile/me", checkRole(["agent"]), uploadProfile.single("profilePicture"), updateAgentProfile);
 
-// Role-based routes
 router.post("/", checkRole(["manager", "admin"]), uploadProfile.single("profilePicture"), createAgent);
 router.get("/", getAllAgents);
 router.get("/:id", getAgentById);

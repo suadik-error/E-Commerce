@@ -10,11 +10,9 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication and manager/admin role
 router.use(protectRoute);
 router.use(checkRole(["manager", "admin"]));
 
-// Worker management routes
 router.post("/", createWorker);
 router.get("/", getAllWorkers);
 router.get("/:id", getWorkerById);

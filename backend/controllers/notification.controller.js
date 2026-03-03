@@ -1,6 +1,5 @@
 import Notification from "../model/notification.model.js";
 
-// Get all notifications for current user
 export const getNotifications = async (req, res) => {
     try {
         const recipientQuery = { recipient: req.user._id };
@@ -16,7 +15,6 @@ export const getNotifications = async (req, res) => {
     }
 };
 
-// Get unread notification count
 export const getUnreadCount = async (req, res) => {
     try {
         const recipientQuery = { recipient: req.user._id, isRead: false };
@@ -29,7 +27,6 @@ export const getUnreadCount = async (req, res) => {
     }
 };
 
-// Mark notification as read
 export const markAsRead = async (req, res) => {
     try {
         const notification = await Notification.findByIdAndUpdate(
@@ -52,7 +49,6 @@ export const markAsRead = async (req, res) => {
     }
 };
 
-// Mark all notifications as read
 export const markAllAsRead = async (req, res) => {
     try {
         const recipientQuery = { recipient: req.user._id, isRead: false };
@@ -66,7 +62,6 @@ export const markAllAsRead = async (req, res) => {
     }
 };
 
-// Delete notification
 export const deleteNotification = async (req, res) => {
     try {
         const notification = await Notification.findByIdAndDelete(req.params.id);
@@ -82,7 +77,6 @@ export const deleteNotification = async (req, res) => {
     }
 };
 
-// Create notification (internal function for other controllers to use)
 export const createNotification = async (recipient, recipientRole, type, title, message, reference = null) => {
     try {
         const notification = await Notification.create({

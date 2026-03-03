@@ -59,7 +59,6 @@ const handleSubmit = async (e) => {
       throw new Error(data.message || "Signup failed");
     }
 
-    // Success â†’ redirect to login
     navigate("/login");
 
   } catch (err) {
@@ -95,7 +94,7 @@ const handleSubmit = async (e) => {
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <span className="icon">ðŸ‘¤</span>
+            <span className="icon">👤</span>
             <input
               type="text"
               name="name"
@@ -107,7 +106,7 @@ const handleSubmit = async (e) => {
           </div>
 
           <div className="input-group">
-            <span className="icon">ðŸ“§</span>
+            <span className="icon">📧</span>
             <input
               type="email"
               name="email"
@@ -119,7 +118,7 @@ const handleSubmit = async (e) => {
           </div>
 
           <div className="input-group">
-            <span className="icon">ðŸ”’</span>
+            <span className="icon">🔒</span>
             <input
               type="password"
               name="password"
@@ -131,7 +130,7 @@ const handleSubmit = async (e) => {
           </div>
 
           <div className="input-group">
-            <span className="icon">ðŸ”’</span>
+            <span className="icon">🔒</span>
             <input
               type="password"
               name="confirmPassword"

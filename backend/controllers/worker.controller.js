@@ -1,24 +1,20 @@
 import Worker from "../model/worker.model.js";
 import Manager from "../model/manager.model.js";
 
-// Create a new worker (Manager only)
 export const createWorker = async (req, res) => {
     try {
         const { name, email, phone, address, department, position } = req.body;
 
-        // Check if worker already exists
         const existingWorker = await Worker.findOne({ email });
         if (existingWorker) {
             return res.status(400).json({ message: "Worker with this email already exists" });
         }
 
-        // Get the manager who is creating this worker
         const manager = await Manager.findOne({ email: req.user.email });
         if (!manager) {
             return res.status(404).json({ message: "Manager profile not found" });
         }
 
-        // Create worker linked to manager (no login access)
         const worker = await Worker.create({
             name,
             email,
@@ -39,16 +35,13 @@ export const createWorker = async (req, res) => {
     }
 };
 
-// Get all workers (Manager or Admin)
 export const getAllWorkers = async (req, res) => {
     try {
         let workers;
         
         if (req.user.role === "admin") {
-            // Admin can see all workers
             workers = await Worker.find().populate("manager", "name email").sort({ createdAt: -1 });
         } else if (req.user.role === "manager") {
-            // Manager can see only their workers
             const manager = await Manager.findOne({ email: req.user.email });
             if (!manager) {
                 return res.status(404).json({ message: "Manager profile not found" });
@@ -65,7 +58,6 @@ export const getAllWorkers = async (req, res) => {
     }
 };
 
-// Get single worker by ID
 export const getWorkerById = async (req, res) => {
     try {
         const worker = await Worker.findById(req.params.id).populate("manager", "name email");
@@ -79,7 +71,6 @@ export const getWorkerById = async (req, res) => {
     }
 };
 
-// Update worker
 export const updateWorker = async (req, res) => {
     try {
         const { name, phone, address, department, position, isActive, managerId } = req.body;
@@ -118,7 +109,6 @@ export const updateWorker = async (req, res) => {
     }
 };
 
-// Delete worker (Manager or Admin)
 export const deleteWorker = async (req, res) => {
     try {
         const worker = await Worker.findByIdAndDelete(req.params.id);

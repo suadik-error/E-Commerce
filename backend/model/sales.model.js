@@ -45,19 +45,16 @@ const salesSchema = new mongoose.Schema({
     customerAddress: {
         type: String,
     },
-    // Payment status: pending, paid, confirmed
     paymentStatus: {
         type: String,
         enum: ["pending", "paid", "confirmed", "cancelled"],
         default: "pending"
     },
-    // Product status: picked, sold, returned
     productStatus: {
         type: String,
         enum: ["picked", "sold", "returned"],
         default: "picked"
     },
-    // Sales status: active, completed
     status: {
         type: String,
         enum: ["active", "completed", "cancelled"],
@@ -66,21 +63,17 @@ const salesSchema = new mongoose.Schema({
     notes: {
         type: String,
     },
-    // Payment confirmed by admin
     paymentConfirmedByAdmin: {
         type: Boolean,
         default: false
     },
-    // Payment confirmed by manager
     paymentConfirmedByManager: {
         type: Boolean,
         default: false
     },
-    // Date when payment was confirmed
     paymentConfirmedAt: {
         type: Date,
     },
-    // Date/time when item was marked as sold
     soldAt: {
         type: Date,
         default: null

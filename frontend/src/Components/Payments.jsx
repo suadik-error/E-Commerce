@@ -5,7 +5,6 @@ const Payments = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data for now - replace with API call later
     setTimeout(() => {
       setPayments([
         {

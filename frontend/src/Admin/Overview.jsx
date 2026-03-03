@@ -34,19 +34,16 @@ const AdminOverview = () => {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch managers
       const managersRes = await fetch(`${API_BASE_URL}/api/managers`, {
         credentials: "include",
       });
       const managersData = await managersRes.json();
 
-      // Fetch agents
       const agentsRes = await fetch(`${API_BASE_URL}/api/agents`, {
         credentials: "include",
       });
       const agentsData = await agentsRes.json();
 
-      // Fetch sales
       const salesRes = await fetch(`${API_BASE_URL}/api/sales`, {
         credentials: "include",
       });
@@ -73,10 +70,7 @@ const AdminOverview = () => {
           pendingPayments,
         });
 
-        // Get recent sales (last 5)
         setRecentSales(sales.slice(0, 5));
-
-        // Get recent managers (last 5)
         setRecentManagers(managers.slice(0, 5));
       }
     } catch (err) {
@@ -94,7 +88,6 @@ const AdminOverview = () => {
         <h1>Dashboard Overview</h1>
       </div>
 
-      {/* Stats Grid */}
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Total Managers</h3>
@@ -130,7 +123,6 @@ const AdminOverview = () => {
         </div>
       </div>
 
-      {/* Recent Sales */}
       <div className="recent-section">
         <div className="section-header">
           <h2>Recent Sales</h2>
@@ -174,7 +166,6 @@ const AdminOverview = () => {
         )}
       </div>
 
-      {/* Recent Managers */}
       <div className="recent-section">
         <div className="section-header">
           <h2>Recent Managers</h2>

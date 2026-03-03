@@ -44,7 +44,7 @@ const LoginPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // â­ IMPORTANT (cookies)
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -56,7 +56,6 @@ const LoginPage = () => {
 
       let role = (data.user || data)?.role;
 
-      // Use server-authenticated profile as source of truth when available.
       try {
         const profileRes = await fetch(`${API_BASE_URL}/api/auth/profile`, {
           credentials: "include",
@@ -66,7 +65,6 @@ const LoginPage = () => {
           role = profile?.role ?? role;
         }
       } catch (_) {
-        // Keep login response role as fallback.
       }
 
       const redirectPath = getRedirectPathByRole(role);
@@ -91,7 +89,7 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <span className="icon">ðŸ“§</span>
+            <span className="icon">📧</span>
             <input
               type="email"
               name="email"
@@ -103,7 +101,7 @@ const LoginPage = () => {
           </div>
 
           <div className="input-group">
-            <span className="icon">ðŸ”’</span>
+            <span className="icon">🔒</span>
             <input
               type="password"
               name="password"
@@ -120,7 +118,7 @@ const LoginPage = () => {
         </form>
 
         <p className="signup-text">
-          Donâ€™t have an account?{" "}
+          Don't have an account?{" "}
           <Link to="/signup">Signup here</Link>
         </p>
       </div>

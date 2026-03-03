@@ -13,20 +13,17 @@ const generateRandomPassword = (length = 12) => {
     return password;
 };
 
-// Create a new agent (Manager only)
 export const createAgent = async (req, res) => {
     try {
         const { name, email, phone, location, governmentId, dateOfBirth, address, profilePicture } = req.body;
         const uploadedProfilePicture = req.file?.path;
         const normalizedEmail = String(email || "").toLowerCase().trim();
 
-        // Check if agent already exists
         const existingAgent = await Agent.findOne({ email: normalizedEmail });
         if (existingAgent) {
             return res.status(400).json({ message: "Agent with this email already exists" });
         }
 
-        // Get the manager who is creating this agent
         const manager = await Manager.findOne({ email: req.user.email });
         if (!manager) {
             return res.status(404).json({ message: "Manager profile not found" });
@@ -54,7 +51,6 @@ export const createAgent = async (req, res) => {
 
         let agent = null;
         try {
-            // Create agent linked to manager
             agent = await Agent.create({
                 name,
                 email: normalizedEmail,
@@ -90,7 +86,6 @@ export const createAgent = async (req, res) => {
             delivery = { email: emailDelivery, sms: smsDelivery };
         }
 
-        // Create notification for manager
         await Notification.create({
             recipient: req.user._id,
             recipientRole: "manager",
@@ -103,7 +98,6 @@ export const createAgent = async (req, res) => {
             }
         });
 
-        // Also notify admin
         const adminUser = await User.findById(manager.admin);
         if (adminUser) {
             await Notification.create({
@@ -131,7 +125,6 @@ export const createAgent = async (req, res) => {
     }
 };
 
-// Get all agents (Manager or Admin)
 export const getAllAgents = async (req, res) => {
     try {
         let agents;
@@ -143,7 +136,6 @@ export const getAllAgents = async (req, res) => {
                 .populate("manager", "name email")
                 .sort({ createdAt: -1 });
         } else if (req.user.role === "manager") {
-            // Manager can see only their agents
             const manager = await Manager.findOne({ email: req.user.email });
             if (!manager) {
                 return res.status(404).json({ message: "Manager profile not found" });
@@ -160,7 +152,6 @@ export const getAllAgents = async (req, res) => {
     }
 };
 
-// Get single agent by ID
 export const getAgentById = async (req, res) => {
     try {
         let agent = null;
@@ -195,7 +186,6 @@ export const getAgentById = async (req, res) => {
     }
 };
 
-// Update agent
 export const updateAgent = async (req, res) => {
     try {
         const { name, phone, location, address, dateOfBirth, isActive, profilePicture, governmentId, managerId } = req.body;
@@ -284,7 +274,6 @@ export const updateAgent = async (req, res) => {
     }
 };
 
-// Delete agent (Manager or Admin)
 export const deleteAgent = async (req, res) => {
     try {
         let agent = null;
@@ -317,7 +306,6 @@ export const deleteAgent = async (req, res) => {
     }
 };
 
-// Get agent profile (Agent)
 export const getAgentProfile = async (req, res) => {
     try {
         const agent = await Agent.findOne({ email: req.user.email });
@@ -331,7 +319,6 @@ export const getAgentProfile = async (req, res) => {
     }
 };
 
-// Update agent profile (Agent only)
 export const updateAgentProfile = async (req, res) => {
     try {
         const { name, phone, location, address, profilePicture } = req.body;
@@ -381,7 +368,6 @@ export const updateAgentProfile = async (req, res) => {
     }
 };
 
-// Update agent performance metrics
 export const updateAgentPerformance = async (agentId, salesCount, revenue) => {
     try {
         await Agent.findByIdAndUpdate(agentId, {

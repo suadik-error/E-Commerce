@@ -78,14 +78,11 @@ const AgentDashboardLayout = () => {
 
   return (
     <div className="dashboard-layout agent-dashboard">
-      {/* Sidebar */}
       <aside className="sidebar">
-        {/* LOGO */}
         <div className="sidebar-logo">
           <h2>Agent<span>Panel</span></h2>
         </div>
 
-        {/* MENU */}
         <nav className="sidebar-menu">
           <NavLink to="/agent" end>
             <LayoutDashboard size={20} />
@@ -108,7 +105,6 @@ const AgentDashboardLayout = () => {
           </NavLink>
         </nav>
 
-        {/* FOOTER */}
         <div className="sidebar-footer">
           <button className="logout-btn" onClick={handleLogout}>
             <LogOut size={18} />
@@ -117,9 +113,7 @@ const AgentDashboardLayout = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="dashboard-content">
-        {/* Top Navbar */}
         <header className="dashboard-header">
           <div className="header-left">
             <h2>Welcome, {user?.name || "Agent"}</h2>
@@ -168,7 +162,6 @@ const AgentDashboardLayout = () => {
           </div>
         </header>
 
-        {/* Page Content */}
         <div className="page-content">
           <Outlet />
         </div>

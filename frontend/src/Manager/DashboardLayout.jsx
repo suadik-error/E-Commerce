@@ -83,14 +83,11 @@ const ManagerDashboardLayout = () => {
 
   return (
     <div className="dashboard-layout manager-dashboard">
-      {/* Sidebar */}
       <aside className="sidebar">
-        {/* LOGO */}
         <div className="sidebar-logo">
           <h2>Manager<span>Panel</span></h2>
         </div>
 
-        {/* MENU */}
         <nav className="sidebar-menu">
           <NavLink to="/manager" end>
             <LayoutDashboard size={20} />
@@ -128,7 +125,6 @@ const ManagerDashboardLayout = () => {
           </NavLink>
         </nav>
 
-        {/* FOOTER */}
         <div className="sidebar-footer">
           <button className="logout-btn" onClick={handleLogout}>
             <LogOut size={18} />
@@ -137,9 +133,7 @@ const ManagerDashboardLayout = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="dashboard-content">
-        {/* Top Navbar */}
         <header className="dashboard-header">
           <div className="header-left">
             <h2>Welcome, {user?.name || "Manager"}</h2>
@@ -188,7 +182,6 @@ const ManagerDashboardLayout = () => {
           </div>
         </header>
 
-        {/* Page Content */}
         <div className="page-content">
           <Outlet />
         </div>

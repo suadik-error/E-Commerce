@@ -4,19 +4,16 @@ import Notification from "../model/notification.model.js";
 import Agent from "../model/agent.model.js";
 import Worker from "../model/worker.model.js";
 
-// Create a new manager (Admin only)
 export const createManager = async (req, res) => {
     try {
         const { name, email, phone, address, governmentId, profilePicture } = req.body;
         const uploadedProfilePicture = req.file?.path;
 
-        // Check if manager already exists
         const existingManager = await Manager.findOne({ email });
         if (existingManager) {
             return res.status(400).json({ message: "Manager with this email already exists" });
         }
 
-        // Create manager linked to admin
         const manager = await Manager.create({
             name,
             email,
@@ -27,7 +24,6 @@ export const createManager = async (req, res) => {
             admin: req.user._id
         });
 
-        // Create notification for admin
         await Notification.create({
             recipient: req.user._id,
             recipientRole: "admin",
@@ -50,7 +46,6 @@ export const createManager = async (req, res) => {
     }
 };
 
-// Get all managers (Admin only)
 export const getAllManagers = async (req, res) => {
     try {
         const managers = await Manager.find({ admin: req.user._id }).sort({ createdAt: -1 });
@@ -61,7 +56,6 @@ export const getAllManagers = async (req, res) => {
     }
 };
 
-// Get single manager by ID (Admin only)
 export const getManagerById = async (req, res) => {
     try {
         const manager = await Manager.findOne({ _id: req.params.id, admin: req.user._id });
@@ -75,7 +69,6 @@ export const getManagerById = async (req, res) => {
     }
 };
 
-// Update manager (Admin only)
 export const updateManager = async (req, res) => {
     try {
         const { name, phone, address, isActive, profilePicture, governmentId } = req.body;
@@ -121,7 +114,6 @@ export const updateManager = async (req, res) => {
     }
 };
 
-// Delete manager (Admin only)
 export const deleteManager = async (req, res) => {
     try {
         const manager = await Manager.findOne({ _id: req.params.id, admin: req.user._id });
@@ -130,7 +122,6 @@ export const deleteManager = async (req, res) => {
             return res.status(404).json({ message: "Manager not found" });
         }
 
-        // Keep agents/workers, but unassign them so admin can reassign later.
         await Promise.all([
             Agent.updateMany({ manager: manager._id }, { $set: { manager: null } }),
             Worker.updateMany({ manager: manager._id }, { $set: { manager: null } }),
@@ -145,7 +136,6 @@ export const deleteManager = async (req, res) => {
     }
 };
 
-// Get manager profile (Manager)
 export const getManagerProfile = async (req, res) => {
     try {
         const manager = await Manager.findOne({ email: req.user.email });

@@ -6,7 +6,6 @@ import { User, Mail, Phone, MapPin, FileText, Bell, Palette, Shield, Key, Camera
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 
-
 const Settings = () => {
   const location = useLocation();
   const [profile, setProfile] = useState({
@@ -139,7 +138,6 @@ const Settings = () => {
       </div>
 
       <div className="settings-container">
-        {/* Settings Tabs */}
         <div className="settings-tabs">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -157,7 +155,6 @@ const Settings = () => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Profile Tab */}
           {activeTab === "profile" && (
             <div className="settings-card">
               <h2>
@@ -227,7 +224,6 @@ const Settings = () => {
             </div>
           )}
 
-          {/* Preferences Tab */}
           {activeTab === "preferences" && (
             <div className="settings-card">
               <h2>
@@ -305,7 +301,6 @@ const Settings = () => {
             </div>
           )}
 
-          {/* Security Tab */}
           {activeTab === "security" && (
             <div className="settings-card">
               <h2>

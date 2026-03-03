@@ -6,7 +6,6 @@ const notificationSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    // Role-based notification: admin, manager, agent
     recipientRole: {
         type: String,
         enum: ["admin", "manager", "agent"],
@@ -40,7 +39,6 @@ const notificationSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    // Reference to related document
     reference: {
         model: {
             type: String,
@@ -54,7 +52,6 @@ const notificationSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    // Priority: low, normal, high
     priority: {
         type: String,
         enum: ["low", "normal", "high"],
