@@ -46,13 +46,6 @@ app.use("/api/sales", salesRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.get("/healthz", (_req, res) => res.status(200).json({ ok: true }));
 
-const frontendDist = path.join(__dirname, "../frontend/dist");
-app.use(express.static(frontendDist));
-app.get("/{*any}", (_req, res) => {
-  res.sendFile(path.join(frontendDist, "index.html"));
-});
-
-
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
     connectDB();
