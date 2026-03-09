@@ -2,7 +2,7 @@ services:
   - type: web
     name: suad-busi-tech-api
     env: node
-    nodeVersion: 20
+    runtime: node_20
     buildCommand: npm install
     startCommand: npm start
     envVars:
