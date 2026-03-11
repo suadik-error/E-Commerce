@@ -2,7 +2,7 @@
   "name": "suad-busi-tech",
   "version": "1.0.0",
   "main": "backend/server.js",
-  "description": "Business Technology Management Platform",
+  "description": "",
   "scripts": {
     "dev": "nodemon backend/server.js",
     "start": "node backend/server.js"
@@ -14,7 +14,6 @@
   "author": "",
   "type": "module",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
