@@ -1,10 +1,9 @@
-
-# Project Separation TODO
+# Project Separation & Deployment TODO
 
 ## Goal
 Separate frontend and backend for independent deployment (Vercel for frontend, Render for backend)
 
-## Tasks Completed
+## Separation Tasks Completed
 
 ### Backend Separation
 - [x] 1. Updated `backend/server.js` - removed static file serving
@@ -20,22 +19,39 @@ Separate frontend and backend for independent deployment (Vercel for frontend, R
 - [x] 7. Updated root `package.json` - removed build script
 - [x] 8. Created root `vercel.json` - configured to build from frontend folder
 
-## Deployment Instructions
+## Deployment Tasks
+
+### GitHub
+- [x] Push code to GitHub repo: https://github.com/suadik-error/E-Commerce.git (main branch)
 
 ### Backend (Render)
-1. Push code to GitHub
-2. Connect `backend/` folder to Render or use `backend/render.yaml`
-3. Set environment variables (MongoDB, Redis, etc.)
+- [ ] 1. Create new Web Service on Render.com
+- [ ] 2. Connect GitHub repo https://github.com/suadik-error/E-Commerce.git
+- [ ] 3. Select 'Build & deploy from a Git repository' → Blueprint → parse render.yaml
+- [ ] 4. Set service name (e.g., suad-busi-tech-api), region, branch main
+- [ ] 5. Add required Environment Variables:
+  ```
+  NODE_ENV=production
+  MONGODB_URI=your_mongodb_connection_string
+  REDIS_URL=your_redis_url
+  CLOUDINARY_CLOUD_NAME=...
+  CLOUDINARY_API_KEY=...
+  CLOUDINARY_API_SECRET=...
+  JWT_SECRET=your_jwt_secret
+  # Add any other from backend/.env
+  ```
+- [ ] 6. Deploy → Note Backend URL (e.g., https://suad-busi-tech-api.onrender.com)
 
 ### Frontend (Vercel)
-1. Push code to GitHub
-2. Import project to Vercel
-3. Configure:
-   - Build Command: `cd frontend && npm run build`
-   - Install Command: `cd frontend && npm install`
-   - Output Directory: `frontend/dist`
-4. Add environment variable:
-   - `VITE_API_URL` = your Render backend URL
+- [ ] 1. Go to vercel.com/dashboard → New Project → Import GitHub repo https://github.com/suadik-error/E-Commerce.git
+- [ ] 2. Framework Preset: Other, Root Directory: ./ (uses root vercel.json)
+- [ ] 3. Add Environment Variable: VITE_API_URL = your_backend_render_url (e.g., https://suad-busi-tech-api.onrender.com/api)
+- [ ] 4. Deploy → Note Frontend URL
 
-## Completed
+### Post-Deployment
+- [ ] Update this TODO.md with live URLs
+- [ ] Test full flow: login, dashboards, API calls
+- [ ] If CORS issues, update backend cors origin to Vercel frontend URL
 
+## Next Action
+Start with Backend deployment on Render (takes ~5-10 min). Need your env vars values?
