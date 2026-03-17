@@ -4,5 +4,5 @@ services:
     name: suad-busi-tech-api
     env: node
 buildCommand: cd backend && npm install
-startCommand: cd backend && npm start
+startCommand: node server.js
        autoDeploy: true

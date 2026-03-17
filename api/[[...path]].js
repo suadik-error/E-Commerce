@@ -37,6 +37,10 @@ app.use("/workers", workerRoutes);
 app.use("/sales", salesRoutes);
 app.use("/notifications", notificationRoutes);
 
+import { connectDB } from '../backend/lib/db.js';
+
+connectDB(); // Connect on module load for serverless
+
 app.get("/healthz", (req, res) => res.status(200).json({ ok: true }));
 
 const handler = (req, res) => {
