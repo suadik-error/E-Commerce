@@ -1,19 +1,16 @@
 {
-  "name": "suad-busi-tech",
+  "name": "suad-busi-tech-backend",
   "version": "1.0.0",
+  "description": "Backend API for Suad Business Technology",
+  "type": "module",
   "main": "backend/server.js",
-  "description": "",
   "scripts": {
-    "dev": "nodemon backend/server.js",
-    "start": "node backend/server.js"
+    "dev": "cd backend && npm run dev",
+    "start": "cd backend && npm start"
   },
   "engines": {
     "node": "20"
   },
-  "keywords": [],
-  "author": "",
-  "type": "module",
-  "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
@@ -30,5 +27,6 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
-  }
+  },
+  "license": "ISC"
 }
