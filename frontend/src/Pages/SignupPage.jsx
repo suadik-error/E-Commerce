@@ -87,75 +87,91 @@ const handleSubmit = async (e) => {
 
   return (
     <div className="signup-container">
-      <div className="signup-card">
-        <h2>Sign Up</h2>
-
-        {error && <p className="error-text">{error}</p>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <span className="icon">👤</span>
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
+      <div className="auth-shell">
+        <div className="auth-brand">
+          <span className="auth-kicker">Get Started</span>
+          <h1>Create your account and launch your sales workspace.</h1>
+          <p>
+            Set up your access once, then manage products, staff activity, and
+            customer-facing operations from a single dashboard.
+          </p>
+          <div className="auth-highlights">
+            <span>Fast onboarding</span>
+            <span>Secure access</span>
+            <span>Team-ready tools</span>
           </div>
+        </div>
 
-          <div className="input-group">
-            <span className="icon">📧</span>
-            <input
-              type="email"
-              name="email"
-              placeholder="example@email.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
+        <div className="signup-card auth-panel">
+          <h2>Create account</h2>
+          <p className="auth-subtitle">Open a new workspace in a few steps.</p>
 
-          <div className="input-group">
-            <span className="icon">🔒</span>
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          {error && <p className="error-text">{error}</p>}
 
-          <div className="input-group">
-            <span className="icon">🔒</span>
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="input-group">
+              <span className="icon">👤</span>
+              <input
+                type="text"
+                name="name"
+                placeholder="Full Name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          {formData.password && (
-  <small className="password-hint">
-    Use at least 8 characters, uppercase, number & symbol
-  </small>
-)}
+            <div className="input-group">
+              <span className="icon">📧</span>
+              <input
+                type="email"
+                name="email"
+                placeholder="example@email.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
+            <div className="input-group">
+              <span className="icon">🔒</span>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <button type="submit" className="signup-btn" disabled={loading}>
-            {loading ? "Creating..." : "Create Account"}
-          </button>
-        </form>
+            <div className="input-group">
+              <span className="icon">🔒</span>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <p className="login-text">
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
+            {formData.password && (
+              <small className="password-hint">
+                Use at least 8 characters, uppercase, number & symbol
+              </small>
+            )}
+
+            <button type="submit" className="signup-btn" disabled={loading}>
+              {loading ? "Creating..." : "Create Account"}
+            </button>
+          </form>
+
+          <p className="login-text">
+            Already have an account? <Link to="/login">Login</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

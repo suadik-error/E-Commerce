@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import { User, Mail, Phone, MapPin, FileText, Bell, Palette, Shield, Key, Camera } from "lucide-react";
+import { User, Mail, Shield, Key, Camera } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
@@ -30,15 +30,9 @@ const Settings = () => {
   }, []);
 
   useEffect(() => {
-    const theme = profile.theme || "light";
-    localStorage.setItem("theme", theme);
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [profile.theme]);
-
-  useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("tab");
-    if (tab && ["profile", "preferences", "security"].includes(tab)) {
+    if (tab && ["profile", "security"].includes(tab)) {
       setActiveTab(tab);
     }
   }, [location.search]);
@@ -126,7 +120,6 @@ const Settings = () => {
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
-    { id: "preferences", label: "Preferences", icon: Palette },
     { id: "security", label: "Security", icon: Shield },
   ];
 
@@ -219,83 +212,6 @@ const Settings = () => {
                     onChange={handleChange}
                     readOnly
                   />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "preferences" && (
-            <div className="settings-card">
-              <h2>
-                <Palette size={20} />
-                Preferences
-              </h2>
-
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="theme">
-                    <Palette size={16} />
-                    Theme
-                  </label>
-                  <select
-                    id="theme"
-                    name="theme"
-                    value={profile.theme}
-                    onChange={handleChange}
-                  >
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="auto">Auto</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="language">
-                    <FileText size={16} />
-                    Language
-                  </label>
-                  <select
-                    id="language"
-                    name="language"
-                    value={profile.language}
-                    onChange={handleChange}
-                  >
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="timezone">
-                    <FileText size={16} />
-                    Timezone
-                  </label>
-                  <select
-                    id="timezone"
-                    name="timezone"
-                    value={profile.timezone}
-                    onChange={handleChange}
-                  >
-                    <option value="UTC">UTC</option>
-                    <option value="EST">Eastern Time</option>
-                    <option value="PST">Pacific Time</option>
-                    <option value="GMT">Greenwich Mean Time</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="notifications"
-                      checked={profile.notifications}
-                      onChange={handleChange}
-                    />
-                    <Bell size={16} />
-                    Enable Notifications
-                  </label>
                 </div>
               </div>
             </div>

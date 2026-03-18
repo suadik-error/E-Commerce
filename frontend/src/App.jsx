@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignUpPage from "./Pages/SignupPage.jsx";
 import LoginPage from "./Pages/LoginPage.jsx";
 import AdminForm from "./Pages/AdminForm.jsx";
+import Home from "./Pages/Home.jsx";
 
 import Navbar from "./Components/Navbar";
 import RequireAuth from "./Components/RequireAuth.jsx";
-import WelcomePage from "./Pages/WelcomePage.jsx";
 import DashboardLayout from "./Admin/DashboardLayout.jsx";
 import Users from "./Components/Users.jsx";
 import Products from "./Components/Products.jsx";
@@ -42,12 +42,12 @@ function App() {
       <Navbar />
       <div className="Main-Container">
         <Routes>
-          <Route path="/" element={<WelcomePage />} />
+          <Route path="/" element={<Home />} />
 
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin-request" element={<AdminForm />} />
-          <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/welcome" element={<Home />} />
           <Route path="/products" element={<div>Products Page</div>} />
           <Route path="/orders" element={<div>Orders Page</div>} />
           <Route path="/cart" element={<div>Cart Page</div>} />

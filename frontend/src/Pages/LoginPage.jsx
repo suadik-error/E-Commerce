@@ -63,7 +63,7 @@ const LoginPage = () => {
         if (profileRes.ok) {
           const profile = await profileRes.json();
           role = profile?.role ?? role;
-        }
+        }why
       } catch (_) {
       }
 
@@ -82,45 +82,62 @@ const LoginPage = () => {
 
   return (
     <div className="login-container">
-      <div className="login-card">
-        <h2>Login</h2>
-
-        {error && <p className="error-text">{error}</p>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <span className="icon">📧</span>
-            <input
-              type="email"
-              name="email"
-              placeholder="example@email.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+      <div className="auth-shell">
+        <div className="auth-brand">
+          <span className="auth-kicker">Business Commerce Suite</span>
+          <h1>Run products, sales, and team workflows from one place.</h1>
+          <p>
+            Sign in to manage inventory, track orders, monitor payments, and
+            keep your sales operation moving across every device.
+          </p>
+          <div className="auth-highlights">
+            <span>Inventory control</span>
+            <span>Sales visibility</span>
+            <span>Team management</span>
           </div>
+        </div>
 
-          <div className="input-group">
-            <span className="icon">🔒</span>
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
+        <div className="login-card auth-panel">
+          <h2>Welcome back</h2>
+          <p className="auth-subtitle">Log in to continue to your workspace.</p>
 
-          <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
+          {error && <p className="error-text">{error}</p>}
 
-        <p className="signup-text">
-          Don't have an account?{" "}
-          <Link to="/signup">Signup here</Link>
-        </p>
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="input-group">
+              <span className="icon">📧</span>
+              <input
+                type="email"
+                name="email"
+                placeholder="example@email.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="input-group">
+              <span className="icon">🔒</span>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <button type="submit" className="login-btn" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
+
+          <p className="signup-text">
+            Don't have an account?{" "}
+            <Link to="/signup">Signup here</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

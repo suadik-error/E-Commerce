@@ -1,9 +1,9 @@
 import express from "express"
-import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import "./lib/env.js";
 
 import { connectDB } from "./lib/db.js";
 
@@ -17,13 +17,11 @@ import workerRoutes from "./routes/worker.routes.js";
 import salesRoutes from "./routes/sales.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 
-dotenv.config();
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 4000;
 
 const app = express();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const configuredOrigins = [
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL,

@@ -1,21 +1,36 @@
-﻿import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
-LayoutDashboard,
-  Users,
-  Package,
-  CreditCard,
-  Settings,
-  LogOut,
   BarChart3,
-  ShoppingCart,
+  CreditCard,
+  LayoutDashboard,
+  LogOut,
   MessageSquare,
-  Shield
+  Package,
+  Settings,
+  Shield,
+  ShoppingCart,
+  Users,
+  X,
 } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
+const primaryLinks = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/dashboard/users", label: "Users", icon: Users },
+  { to: "/dashboard/products", label: "Products", icon: Package },
+  { to: "/dashboard/payments", label: "Payments", icon: CreditCard },
+  { to: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
+];
 
-const Sidebar = () => {
+const secondaryLinks = [
+  { to: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/dashboard/messages", label: "Messages", icon: MessageSquare },
+  { to: "/dashboard/security", label: "Security", icon: Shield },
+  { to: "/dashboard/settings", label: "Settings", icon: Settings },
+];
+
+const Sidebar = ({ isOpen = false, onClose = () => {} }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -32,66 +47,62 @@ const Sidebar = () => {
     }
   };
 
+  const renderNavLink = ({ to, label, icon: Icon, end = false }) => (
+    <NavLink key={to} to={to} end={end} onClick={onClose}>
+      <Icon size={18} />
+      <span>{label}</span>
+    </NavLink>
+  );
+
   return (
-    <aside className="sidebar">
-      <div className="sidebar-logo">
-        <h2>Suad<span>Admin</span></h2>
-      </div>
+    <>
+      <div
+        className={`admin-sidebar-backdrop ${isOpen ? "is-visible" : ""}`}
+        onClick={onClose}
+      />
 
-      <nav className="sidebar-menu">
-        <NavLink to="/dashboard" end>
-          <LayoutDashboard size={20} />
-          <span>Overview</span>
-        </NavLink>
+      <aside className={`sidebar admin-sidebar ${isOpen ? "is-open" : ""}`}>
+        <div className="sidebar-logo admin-sidebar-brand">
+          <div className="admin-sidebar-logo-mark">SB</div>
+          <div>
+            <h2>Suad Admin</h2>
+            <p>Control center</p>
+          </div>
 
-        <NavLink to="/dashboard/users">
-          <Users size={20} />
-          <span>Users</span>
-        </NavLink>
+          <button
+            type="button"
+            className="admin-sidebar-close"
+            onClick={onClose}
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-        <NavLink to="/dashboard/products">
-          <Package size={20} />
-          <span>Products</span>
-        </NavLink>
+        <div className="admin-sidebar-scroll">
+          <div className="admin-sidebar-group">
+            <span className="admin-sidebar-label">Menu</span>
+            <nav className="sidebar-menu admin-sidebar-menu">
+              {primaryLinks.map(renderNavLink)}
+            </nav>
+          </div>
 
-        <NavLink to="/dashboard/payments">
-          <CreditCard size={20} />
-          <span>Payments</span>
-        </NavLink>
+          <div className="admin-sidebar-group">
+            <span className="admin-sidebar-label">Workspace</span>
+            <nav className="sidebar-menu admin-sidebar-menu">
+              {secondaryLinks.map(renderNavLink)}
+            </nav>
+          </div>
+        </div>
 
-        <NavLink to="/dashboard/orders">
-          <ShoppingCart size={20} />
-          <span>Orders</span>
-        </NavLink>
-
-        <NavLink to="/dashboard/analytics">
-          <BarChart3 size={20} />
-          <span>Analytics</span>
-        </NavLink>
-
-        <NavLink to="/dashboard/messages">
-          <MessageSquare size={20} />
-          <span>Messages</span>
-        </NavLink>
-
-        <NavLink to="/dashboard/security">
-          <Shield size={20} />
-          <span>Security</span>
-        </NavLink>
-
-        <NavLink to="/dashboard/settings">
-          <Settings size={20} />
-          <span>Settings</span>
-        </NavLink>
-      </nav>
-
-      <div className="sidebar-footer">
-        <button className="logout-btn" onClick={handleLogout}>
-          <LogOut size={18} />
-          Logout
-        </button>
-      </div>
-    </aside>
+        <div className="sidebar-footer admin-sidebar-footer">
+          <button className="logout-btn admin-logout-btn" onClick={handleLogout}>
+            <LogOut size={18} />
+            Logout
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 
