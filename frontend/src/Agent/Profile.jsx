@@ -1,6 +1,8 @@
 ﻿import { useState, useEffect } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+const MIN_SESSION_TIMEOUT = 15;
+const MAX_SESSION_TIMEOUT = 60;
 
 
 
@@ -17,6 +19,8 @@ const AgentProfile = () => {
     confirmPassword: "",
   });
   const [changingPassword, setChangingPassword] = useState(false);
+  const [sessionTimeout, setSessionTimeout] = useState(MIN_SESSION_TIMEOUT);
+  const [savingSessionTimeout, setSavingSessionTimeout] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -31,21 +35,36 @@ const AgentProfile = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/agents/profile/me`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setUser(data);
+      const [agentRes, authRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/agents/profile/me`, {
+          credentials: "include",
+        }),
+        fetch(`${API_BASE_URL}/api/auth/profile`, {
+          credentials: "include",
+        }),
+      ]);
+
+      const agentData = await agentRes.json();
+      const authData = authRes.ok ? await authRes.json() : {};
+
+      if (agentRes.ok) {
+        const mergedUser = { ...agentData, ...authData };
+        setUser(mergedUser);
         setFormData({
-          name: data.name || "",
-          phone: data.phone || "",
-          location: data.location || "",
-          address: data.address || "",
+          name: mergedUser.name || "",
+          phone: mergedUser.phone || "",
+          location: mergedUser.location || "",
+          address: mergedUser.address || "",
           profilePicture: null,
         });
+        setSessionTimeout(
+          Math.min(
+            MAX_SESSION_TIMEOUT,
+            Math.max(MIN_SESSION_TIMEOUT, Number(mergedUser.sessionTimeout) || MIN_SESSION_TIMEOUT)
+          )
+        );
       } else {
-        setError(data.message || "Failed to fetch profile");
+        setError(agentData.message || "Failed to fetch profile");
       }
     } catch (err) {
       setError("Failed to fetch profile");
@@ -141,6 +160,51 @@ const AgentProfile = () => {
       setError("Failed to change password");
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  const handleSessionTimeoutSave = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setSavingSessionTimeout(true);
+
+    try {
+      const payload = new FormData();
+      payload.append(
+        "sessionTimeout",
+        String(
+          Math.min(
+            MAX_SESSION_TIMEOUT,
+            Math.max(MIN_SESSION_TIMEOUT, Number(sessionTimeout) || MIN_SESSION_TIMEOUT)
+          )
+        )
+      );
+
+      const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+        method: "PUT",
+        credentials: "include",
+        body: payload,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Failed to update session timeout");
+        return;
+      }
+
+      if (data?.accessToken) {
+        window.dispatchEvent(
+          new CustomEvent("auth:token", { detail: { accessToken: data.accessToken } })
+        );
+      }
+
+      setSuccess("Session timeout updated successfully");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError("Failed to update session timeout");
+    } finally {
+      setSavingSessionTimeout(false);
     }
   };
 
@@ -320,6 +384,36 @@ const AgentProfile = () => {
           </form>
         </div>
       )}
+
+      <div className="profile-card">
+        <h3>Session Timeout</h3>
+        <form onSubmit={handleSessionTimeoutSave} className="profile-form">
+          <div className="form-group">
+            <label>Session Timeout (minutes)</label>
+            <select
+              value={sessionTimeout}
+              onChange={(e) =>
+                setSessionTimeout(
+                  Math.min(
+                    MAX_SESSION_TIMEOUT,
+                    Math.max(MIN_SESSION_TIMEOUT, Number(e.target.value) || MIN_SESSION_TIMEOUT)
+                  )
+                )
+              }
+            >
+              <option value="15">15 minutes</option>
+              <option value="30">30 minutes</option>
+              <option value="60">1 hour</option>
+            </select>
+            <small>Choose 15 minutes, 30 minutes, or 1 hour. Default is 15 minutes.</small>
+          </div>
+          <div className="form-actions">
+            <button type="submit" className="btn-primary" disabled={savingSessionTimeout}>
+              {savingSessionTimeout ? "Saving..." : "Save Timeout"}
+            </button>
+          </div>
+        </form>
+      </div>
 
       <div className="performance-card">
         <h3>Performance</h3>

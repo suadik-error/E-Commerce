@@ -55,6 +55,12 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    sessionTimeout: {
+        type: Number,
+        min: 15,
+        max: 60,
+        default: 15,
+    },
 
     barcodeGenerator: {
         barcode: {

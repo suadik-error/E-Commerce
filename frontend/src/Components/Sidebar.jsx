@@ -1,19 +1,20 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   BarChart3,
+  Bell,
   CreditCard,
   LayoutDashboard,
   LogOut,
   MessageSquare,
   Package,
+  Search,
   Settings,
   Shield,
   ShoppingCart,
+  UserCircle2,
   Users,
   X,
 } from "lucide-react";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const primaryLinks = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -30,22 +31,20 @@ const secondaryLinks = [
   { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
-const Sidebar = ({ isOpen = false, onClose = () => {} }) => {
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      window.dispatchEvent(new Event("authChanged"));
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed");
-    }
-  };
+const Sidebar = ({
+  isOpen = false,
+  onClose = () => {},
+  user = null,
+  notifications = [],
+  unreadCount = 0,
+  searchTerm = "",
+  onSearchChange = () => {},
+  searchItems = [],
+  onSearchSelect = () => {},
+  onNotificationClick = () => {},
+  onLogout = () => {},
+}) => {
+  const userInitial = String(user?.name || "A").trim().charAt(0).toUpperCase();
 
   const renderNavLink = ({ to, label, icon: Icon, end = false }) => (
     <NavLink key={to} to={to} end={end} onClick={onClose}>
@@ -80,6 +79,46 @@ const Sidebar = ({ isOpen = false, onClose = () => {} }) => {
         </div>
 
         <div className="admin-sidebar-scroll">
+          <div className="admin-sidebar-utility">
+            <div className="admin-sidebar-search">
+              <div className="admin-sidebar-input-shell">
+                <Search size={16} />
+                <input
+                  type="search"
+                  value={searchTerm}
+                  placeholder="Search admin pages"
+                  onChange={(event) => onSearchChange(event.target.value)}
+                />
+              </div>
+
+              {searchTerm.trim() && searchItems.length > 0 && (
+                <div className="admin-sidebar-search-results">
+                  {searchItems.slice(0, 5).map((item) => (
+                    <button
+                      key={item.path}
+                      type="button"
+                      className="admin-sidebar-search-item"
+                      onClick={() => {
+                        onSearchSelect(item.path);
+                        onClose();
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {searchTerm.trim() && searchItems.length === 0 && (
+                <div className="admin-sidebar-search-results">
+                  <div className="admin-sidebar-search-empty">
+                    No matching admin pages found.
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="admin-sidebar-group">
             <span className="admin-sidebar-label">Menu</span>
             <nav className="sidebar-menu admin-sidebar-menu">
@@ -93,10 +132,68 @@ const Sidebar = ({ isOpen = false, onClose = () => {} }) => {
               {secondaryLinks.map(renderNavLink)}
             </nav>
           </div>
+
+          <div className="admin-sidebar-group">
+            <span className="admin-sidebar-label">Notifications</span>
+            <div className="admin-sidebar-message-card">
+              <div className="admin-sidebar-message-header">
+                <div className="admin-sidebar-message-title">
+                  <Bell size={16} />
+                  <span>Updates</span>
+                </div>
+                <small>{unreadCount} unread</small>
+              </div>
+
+              {notifications.length === 0 ? (
+                <p className="admin-empty-state">No notifications yet.</p>
+              ) : (
+                <div className="admin-sidebar-notification-list">
+                  {notifications.slice(0, 4).map((notification) => (
+                    <button
+                      key={notification._id}
+                      type="button"
+                      className={`admin-sidebar-notification-item ${
+                        notification.isRead ? "is-read" : "is-unread"
+                      }`}
+                      onClick={() => onNotificationClick(notification._id)}
+                    >
+                      <strong>{notification.title || "Notification"}</strong>
+                      <span>{notification.message || "Open to review details."}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="admin-sidebar-group">
+            <span className="admin-sidebar-label">Account</span>
+            <div className="admin-sidebar-account-actions">
+              <NavLink
+                to="/dashboard/settings?tab=profile"
+                onClick={onClose}
+                className="admin-sidebar-account-profile"
+              >
+                <span className="admin-avatar">{userInitial}</span>
+                <span className="admin-sidebar-account-copy">
+                  <strong>{user?.name || "Admin"}</strong>
+                  <small>Profile</small>
+                </span>
+              </NavLink>
+              <NavLink to="/dashboard/settings" onClick={onClose}>
+                <Settings size={16} />
+                <span>Settings</span>
+              </NavLink>
+              <NavLink to="/dashboard/settings?tab=profile" onClick={onClose}>
+                <UserCircle2 size={16} />
+                <span>Profile</span>
+              </NavLink>
+            </div>
+          </div>
         </div>
 
         <div className="sidebar-footer admin-sidebar-footer">
-          <button className="logout-btn admin-logout-btn" onClick={handleLogout}>
+          <button className="logout-btn admin-logout-btn" onClick={onLogout}>
             <LogOut size={18} />
             Logout
           </button>

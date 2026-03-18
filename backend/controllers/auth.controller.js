@@ -4,9 +4,23 @@ import Agent from "../model/agent.model.js";
 import jwt from "jsonwebtoken";
 import { redis } from "../lib/redis.js"
 
-const generateToken = ({ userId, role }) =>{
+const DEFAULT_SESSION_TIMEOUT_MINUTES = 15;
+const MIN_SESSION_TIMEOUT_MINUTES = 15;
+const MAX_SESSION_TIMEOUT_MINUTES = 60;
+
+const normalizeSessionTimeout = (value) => {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed)) {
+        return DEFAULT_SESSION_TIMEOUT_MINUTES;
+    }
+
+    return Math.min(MAX_SESSION_TIMEOUT_MINUTES, Math.max(MIN_SESSION_TIMEOUT_MINUTES, parsed));
+};
+
+const generateToken = ({ userId, role, sessionTimeout }) =>{
+    const timeoutMinutes = normalizeSessionTimeout(sessionTimeout);
     const accessToken = jwt.sign({ userId, role }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "15m",
+        expiresIn: `${timeoutMinutes}m`,
 
     })
 
@@ -14,7 +28,7 @@ const generateToken = ({ userId, role }) =>{
         expiresIn: "7d",
     })
 
-    return { accessToken, refreshToken }
+    return { accessToken, refreshToken, accessTokenTtlMinutes: timeoutMinutes }
 }
 
 const storeRefreshToken = async (userId, refreshToken) => {
@@ -35,12 +49,13 @@ const getCookieOptions = () => {
     };
 };
 
-const setCookies = (res, accessToken, refreshToken) => {
+const setCookies = (res, accessToken, refreshToken, accessTokenTtlMinutes = DEFAULT_SESSION_TIMEOUT_MINUTES) => {
     const cookieOptions = getCookieOptions();
+    const timeoutMinutes = normalizeSessionTimeout(accessTokenTtlMinutes);
 
      res.cookie("accessToken", accessToken, {
         ...cookieOptions,
-        maxAge: 15 * 60 * 1000,
+        maxAge: timeoutMinutes * 60 * 1000,
     });
     res.cookie("refreshToken", refreshToken, {
         ...cookieOptions,
@@ -58,13 +73,14 @@ export const signup = async (req, res) => {
 		}
 		const user = await User.create({ name, email, password });
 
-		const { accessToken, refreshToken } = generateToken({
+		const { accessToken, refreshToken, accessTokenTtlMinutes } = generateToken({
 			userId: user._id,
 			role: user.role,
+            sessionTimeout: user.sessionTimeout,
 		});
 		await storeRefreshToken(user._id, refreshToken);
 
-		setCookies(res, accessToken, refreshToken);
+		setCookies(res, accessToken, refreshToken, accessTokenTtlMinutes);
 
 		res.status(201).json({
 			_id: user._id,
@@ -88,12 +104,13 @@ export const login = async (req, res) => {
 		const user = await User.findOne({ email });
 
 		if (user && (await user.comparePassword(password))) {
-			const { accessToken, refreshToken } = generateToken({
+			const { accessToken, refreshToken, accessTokenTtlMinutes } = generateToken({
 				userId: user._id,
 				role: user.role,
+                sessionTimeout: user.sessionTimeout,
 			});
 			await storeRefreshToken(user._id, refreshToken);
-			setCookies(res, accessToken, refreshToken);
+			setCookies(res, accessToken, refreshToken, accessTokenTtlMinutes);
 
 			res.status(200).json({
 				message: "Login successful",
@@ -151,15 +168,16 @@ export const refreshToken = async (req, res) => {
 
         const user = await User.findById(decoded.userId);
 
+        const timeoutMinutes = normalizeSessionTimeout(user?.sessionTimeout);
         const accessToken = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: "15m" }
+            { expiresIn: `${timeoutMinutes}m` }
         );
 
         res.cookie("accessToken", accessToken, {
             ...cookieOptions,
-            maxAge: 15 * 60 * 1000,
+            maxAge: timeoutMinutes * 60 * 1000,
         });
 
         res.json({ message: "Token refreshed successfully", accessToken });
@@ -187,6 +205,7 @@ export const updateProfile = async (req, res) => {
 			language,
 			timezone,
 			twoFactor,
+            sessionTimeout,
 		} = req.body;
 
 		const updates = {};
@@ -232,6 +251,12 @@ export const updateProfile = async (req, res) => {
 			updates.twoFactor = twoFactor.toLowerCase() === "true";
 		}
 
+        if (typeof sessionTimeout === "number") {
+            updates.sessionTimeout = normalizeSessionTimeout(sessionTimeout);
+        } else if (typeof sessionTimeout === "string" && sessionTimeout.trim()) {
+            updates.sessionTimeout = normalizeSessionTimeout(sessionTimeout);
+        }
+
 		if (uploadedProfilePicture) {
 			updates.profilePicture = uploadedProfilePicture;
 		}
@@ -245,6 +270,20 @@ export const updateProfile = async (req, res) => {
 		if (!updatedUser) {
 			return res.status(404).json({ message: "User not found" });
 		}
+
+        let accessToken;
+        if (Object.prototype.hasOwnProperty.call(updates, "sessionTimeout")) {
+            accessToken = jwt.sign(
+                { userId: updatedUser._id, role: updatedUser.role },
+                process.env.ACCESS_TOKEN_SECRET,
+                { expiresIn: `${normalizeSessionTimeout(updatedUser.sessionTimeout)}m` }
+            );
+
+            res.cookie("accessToken", accessToken, {
+                ...getCookieOptions(),
+                maxAge: normalizeSessionTimeout(updatedUser.sessionTimeout) * 60 * 1000,
+            });
+        }
 
 		if (req.user.role === "manager") {
 			await Manager.findOneAndUpdate(
@@ -266,7 +305,10 @@ export const updateProfile = async (req, res) => {
 			);
 		}
 
-		res.status(200).json(updatedUser);
+		res.status(200).json({
+            ...updatedUser.toObject(),
+            ...(accessToken ? { accessToken } : {}),
+        });
 	} catch (error) {
 		res.status(500).json({ message: "Failed to update profile" });
 	}

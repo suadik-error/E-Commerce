@@ -305,6 +305,7 @@
   border-right: 1px solid #e6ebf5;
   box-shadow: none;
   color: #111827;
+  backdrop-filter: blur(14px);
 }
 
 :root[data-theme="dark"] .admin-sidebar,
@@ -370,10 +371,13 @@
   flex: 1;
   overflow-y: auto;
   padding: 0 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .admin-sidebar-group + .admin-sidebar-group {
-  margin-top: 22px;
+  margin-top: 0;
 }
 
 .admin-sidebar-label {
@@ -427,6 +431,213 @@
   font-weight: 700;
 }
 
+.admin-sidebar-utility {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-sidebar-message-card,
+.admin-sidebar-account-actions {
+  border: 1px solid #e6ebf5;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 20px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+}
+
+.admin-sidebar-search {
+  position: relative;
+}
+
+.admin-sidebar-input-shell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 18px;
+  border: 1px solid #edf1f7;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #9aa4b2;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+}
+
+.admin-sidebar-input-shell input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #101828;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.admin-sidebar-input-shell input::placeholder {
+  color: #98a2b3;
+}
+
+.admin-sidebar-input-shell:focus-within {
+  border-color: #d0dcff;
+  box-shadow: 0 8px 24px rgba(70, 95, 255, 0.16);
+}
+
+.admin-sidebar-search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #edf1f7;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 22px 38px rgba(16, 24, 40, 0.14);
+  z-index: 12;
+}
+
+.admin-sidebar-search-item {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  padding: 12px 13px;
+  color: #344054;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.admin-sidebar-search-item:hover {
+  background: #f5f8ff;
+  color: #3154ff;
+  transform: translateX(2px);
+}
+
+.admin-sidebar-search-empty {
+  padding: 12px 13px;
+  border-radius: 12px;
+  color: #667085;
+  font-size: 13px;
+  background: #f8fafc;
+}
+
+.admin-sidebar-message-card {
+  padding: 14px;
+}
+
+.admin-sidebar-message-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.admin-sidebar-message-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #101828;
+  font-weight: 700;
+}
+
+.admin-sidebar-message-header small {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-sidebar-notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-sidebar-notification-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  padding: 12px;
+  background: #f8faff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-sidebar-notification-item strong {
+  color: #101828;
+  font-size: 13px;
+}
+
+.admin-sidebar-notification-item span {
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.admin-sidebar-notification-item.is-unread {
+  background: #eef3ff;
+  border-color: #d7e2ff;
+}
+
+.admin-sidebar-notification-item.is-read {
+  background: #f8fafc;
+  border-color: #edf1f7;
+}
+
+.admin-sidebar-account-actions {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-sidebar-account-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+  padding: 12px 14px;
+}
+
+.admin-sidebar-account-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.admin-sidebar-account-copy strong {
+  color: #101828;
+  font-size: 14px;
+}
+
+.admin-sidebar-account-copy small {
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.admin-sidebar-account-actions a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: #475467;
+  font-weight: 600;
+}
+
+.admin-sidebar-account-actions a:hover,
+.admin-sidebar-account-actions a.active {
+  background: #eef2ff;
+  color: #3154ff;
+}
+
 .admin-sidebar-footer {
   border-top: 1px solid #edf1f7;
   padding: 16px;
@@ -448,11 +659,33 @@
   margin: 0 auto;
 }
 
+.admin-topbar-minimal {
+  justify-content: flex-start;
+  padding-bottom: 6px;
+}
+
 .admin-topbar-left,
 .admin-topbar-right {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.admin-topbar-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-topbar-title strong {
+  color: #101828;
+  font-size: 24px;
+  letter-spacing: -0.03em;
+}
+
+.admin-topbar-title span {
+  color: #667085;
+  font-size: 13px;
 }
 
 .admin-search-wrap,
@@ -1262,8 +1495,8 @@
 
   .admin-topbar {
     padding: 16px 16px 0;
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
   }
 
   .admin-topbar-left,
@@ -1271,12 +1504,8 @@
     width: 100%;
   }
 
-  .admin-search-shell {
-    width: 100%;
-  }
-
-  .admin-topbar-right {
-    justify-content: space-between;
+  .admin-topbar-left {
+    width: auto;
   }
 
   .admin-dashboard-content {
@@ -1292,24 +1521,8 @@
     border-radius: 0 24px 24px 0;
   }
 
-  .admin-search-wrap {
-    width: 100%;
-  }
-
-  .admin-search-shell {
-    width: 100%;
-  }
-
-  .admin-search-results,
-  .admin-notification-panel,
-  .admin-profile-menu {
-    width: 100%;
-    max-width: none;
-  }
-
-  .admin-notification-panel,
-  .admin-profile-menu {
-    right: 0;
+  .admin-sidebar-utility {
+    gap: 12px;
   }
 }
 
@@ -1336,31 +1549,18 @@
     gap: 10px;
   }
 
+  .admin-topbar-title strong {
+    font-size: 20px;
+  }
+
+  .admin-topbar-title span {
+    font-size: 12px;
+  }
+
   .admin-icon-btn {
     width: 44px;
     height: 44px;
     border-radius: 14px;
-  }
-
-  .admin-search-shell {
-    height: 50px;
-    border-radius: 14px;
-    padding: 0 14px;
-  }
-
-  .admin-search-results,
-  .admin-notification-panel,
-  .admin-profile-menu {
-    top: calc(100% + 8px);
-    border-radius: 16px;
-    padding: 8px;
-  }
-
-  .admin-search-result,
-  .admin-notification-item,
-  .admin-profile-menu-item {
-    padding: 11px 10px;
-    border-radius: 12px;
   }
 
   .admin-sidebar {
@@ -1377,6 +1577,22 @@
 
   .admin-sidebar-scroll {
     padding: 0 10px 14px;
+  }
+
+  .admin-sidebar-search,
+  .admin-sidebar-message-card,
+  .admin-sidebar-account-actions {
+    border-radius: 16px;
+  }
+
+  .admin-sidebar-input-shell {
+    height: 46px;
+    border-radius: 14px;
+  }
+
+  .admin-sidebar-search-results {
+    border-radius: 16px;
+    padding: 6px;
   }
 
   .admin-sidebar-menu a {

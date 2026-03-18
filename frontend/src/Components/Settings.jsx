@@ -4,6 +4,8 @@ import axios from "axios";
 import { User, Mail, Shield, Key, Camera } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+const MIN_SESSION_TIMEOUT = 15;
+const MAX_SESSION_TIMEOUT = 60;
 
 
 const Settings = () => {
@@ -14,6 +16,7 @@ const Settings = () => {
     role: "",
     notifications: true,
     theme: "light",
+    sessionTimeout: MIN_SESSION_TIMEOUT,
   });
   const [profilePictureFile, setProfilePictureFile] = useState(null);
 
@@ -63,13 +66,27 @@ const Settings = () => {
       if (typeof profile.twoFactor === "boolean") {
         payload.append("twoFactor", String(profile.twoFactor));
       }
+      payload.append(
+        "sessionTimeout",
+        String(
+          Math.min(
+            MAX_SESSION_TIMEOUT,
+            Math.max(MIN_SESSION_TIMEOUT, Number(profile.sessionTimeout) || MIN_SESSION_TIMEOUT)
+          )
+        )
+      );
       if (profilePictureFile) {
         payload.append("profilePicture", profilePictureFile);
       }
 
-      await axios.put(`${API_BASE_URL}/api/auth/profile`, payload, {
+      const res = await axios.put(`${API_BASE_URL}/api/auth/profile`, payload, {
         withCredentials: true,
       });
+      if (res.data?.accessToken) {
+        window.dispatchEvent(
+          new CustomEvent("auth:token", { detail: { accessToken: res.data.accessToken } })
+        );
+      }
       alert("Profile updated successfully!");
       setProfilePictureFile(null);
     } catch (error) {
@@ -88,7 +105,12 @@ const Settings = () => {
     }
     setProfile({
       ...profile,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        name === "sessionTimeout"
+          ? Math.min(MAX_SESSION_TIMEOUT, Math.max(MIN_SESSION_TIMEOUT, Number(value) || MIN_SESSION_TIMEOUT))
+          : type === "checkbox"
+          ? checked
+          : value,
     });
   };
 
@@ -127,7 +149,7 @@ const Settings = () => {
     <div className="settings-page">
       <div className="page-header">
         <h1>Settings</h1>
-        <p>Manage your account settings and preferences</p>
+        <p>Manage your profile details and account security</p>
       </div>
 
       <div className="settings-container">
@@ -149,72 +171,107 @@ const Settings = () => {
 
         <form onSubmit={handleSubmit}>
           {activeTab === "profile" && (
-            <div className="settings-card">
-              <h2>
-                <User size={20} />
-                Profile Information
-              </h2>
+            <>
+              <div className="settings-card">
+                <h2>
+                  <User size={20} />
+                  Account Profile
+                </h2>
 
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="profilePicture">
-                    <Camera size={16} />
-                    Profile Picture
-                  </label>
-                  <input
-                    type="file"
-                    id="profilePicture"
-                    name="profilePicture"
-                    accept="image/*"
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="name">
-                    <User size={16} />
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={profile.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>
+                      <User size={16} />
+                      Full Name
+                    </label>
+                    <input type="text" value={profile.name} readOnly />
+                  </div>
 
-                <div className="form-group">
-                  <label htmlFor="email">
-                    <Mail size={16} />
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={profile.email}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+                  <div className="form-group">
+                    <label>
+                      <Mail size={16} />
+                      Email Address
+                    </label>
+                    <input type="text" value={profile.email} readOnly />
+                  </div>
 
-                <div className="form-group">
-                  <label htmlFor="role">
-                    <Shield size={16} />
-                    Role
-                  </label>
-                  <input
-                    type="text"
-                    id="role"
-                    name="role"
-                    value={profile.role}
-                    onChange={handleChange}
-                    readOnly
-                  />
+                  <div className="form-group">
+                    <label>
+                      <Shield size={16} />
+                      Role
+                    </label>
+                    <input type="text" value={profile.role} readOnly />
+                  </div>
                 </div>
               </div>
-            </div>
+
+              <div className="settings-card">
+                <h2>
+                  <User size={20} />
+                  Profile Information
+                </h2>
+
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label htmlFor="profilePicture">
+                      <Camera size={16} />
+                      Profile Picture
+                    </label>
+                    <input
+                      type="file"
+                      id="profilePicture"
+                      name="profilePicture"
+                      accept="image/*"
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="name">
+                      <User size={16} />
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={profile.name}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="email">
+                      <Mail size={16} />
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={profile.email}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="role">
+                      <Shield size={16} />
+                      Role
+                    </label>
+                    <input
+                      type="text"
+                      id="role"
+                      name="role"
+                      value={profile.role}
+                      onChange={handleChange}
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
           {activeTab === "security" && (
@@ -254,6 +311,26 @@ const Settings = () => {
                     value={passwordData.currentPassword}
                     onChange={(e) => setPasswordData((prev) => ({ ...prev, currentPassword: e.target.value }))}
                   />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="sessionTimeout">
+                    <Shield size={16} />
+                    Session Timeout (Minutes)
+                  </label>
+                  <select
+                    id="sessionTimeout"
+                    name="sessionTimeout"
+                    value={profile.sessionTimeout}
+                    onChange={handleChange}
+                  >
+                    <option value="15">15 minutes</option>
+                    <option value="30">30 minutes</option>
+                    <option value="60">1 hour</option>
+                  </select>
+                  <p className="field-description">
+                    Choose 15 minutes, 30 minutes, or 1 hour. Default is 15 minutes.
+                  </p>
                 </div>
 
                 <div className="form-group">
