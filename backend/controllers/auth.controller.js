@@ -21,14 +21,22 @@ const storeRefreshToken = async (userId, refreshToken) => {
     await redis.set(`refresh_token:${userId}`, refreshToken, 'EX', 60 * 60 * 24 * 7);
 }
 
+const getCookieOptions = () => {
+    const secureCookie =
+        process.env.COOKIE_SECURE === "true" ||
+        process.env.NODE_ENV === "production" ||
+        process.env.RENDER === "true";
+
+    return {
+        httpOnly: true,
+        secure: secureCookie,
+        sameSite: secureCookie ? "none" : "lax",
+        path: "/",
+    };
+};
 
 const setCookies = (res, accessToken, refreshToken) => {
-    const isProd = process.env.NODE_ENV === "production";
-    const cookieOptions = {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: isProd ? "none" : "lax",
-    };
+    const cookieOptions = getCookieOptions();
 
      res.cookie("accessToken", accessToken, {
         ...cookieOptions,
@@ -107,12 +115,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
 	try {
-		const isProd = process.env.NODE_ENV === "production";
-		const cookieOptions = {
-			httpOnly: true,
-			secure: isProd,
-			sameSite: isProd ? "none" : "lax",
-		};
+		const cookieOptions = getCookieOptions();
 		const refreshToken = req.cookies.refreshToken;
 		if (refreshToken) {
 			const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
@@ -130,12 +133,7 @@ export const logout = async (req, res) => {
 
 export const refreshToken = async (req, res) => {
     try {
-        const isProd = process.env.NODE_ENV === "production";
-        const cookieOptions = {
-            httpOnly: true,
-            secure: isProd,
-            sameSite: isProd ? "none" : "lax",
-        };
+        const cookieOptions = getCookieOptions();
         const refreshToken = req.cookies.refreshToken;
 
         if (!refreshToken) {

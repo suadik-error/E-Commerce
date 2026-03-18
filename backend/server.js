@@ -24,9 +24,19 @@ const PORT = process.env.PORT || 4000;
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const allowedOrigins = (process.env.CLIENT_URL || process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
 }));
 
@@ -50,4 +60,3 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
     connectDB();
 });
-
