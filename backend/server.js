@@ -24,21 +24,86 @@ const PORT = process.env.PORT || 4000;
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const allowedOrigins = (process.env.CLIENT_URL || process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "")
-  .split(",")
+const configuredOrigins = [
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
+  process.env.CORS_ORIGIN,
+]
+  .filter(Boolean)
+  .flatMap((value) => value.split(","))
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-app.use(cors({
+const localhostOrigins = new Set([
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173",
+]);
+
+const vercelPreviewSuffixes = configuredOrigins
+  .map((origin) => {
+    try {
+      const { hostname } = new URL(origin);
+
+      if (!hostname.endsWith(".vercel.app")) {
+        return null;
+      }
+
+      const parts = hostname.split(".");
+      if (parts.length < 3) {
+        return null;
+      }
+
+      const labels = parts[0].split("-");
+      if (labels.length < 2) {
+        return null;
+      }
+
+      return `-${labels.slice(1).join("-")}.vercel.app`;
+    } catch {
+      return null;
+    }
+  })
+  .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (localhostOrigins.has(origin) || configuredOrigins.includes(origin)) {
+    return true;
+  }
+
+  try {
+    const { hostname, protocol } = new URL(origin);
+
+    if (protocol !== "https:") {
+      return false;
+    }
+
+    return vercelPreviewSuffixes.some((suffix) => hostname.endsWith(suffix));
+  } catch {
+    return false;
+  }
+};
+
+const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    if (configuredOrigins.length === 0 || isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
     return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
-}));
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(cookieParser());
 
