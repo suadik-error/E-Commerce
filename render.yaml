@@ -1,8 +1,7 @@
-
 services:
   - type: web
-    name: suad-busi-tech-api
-    env: node
-buildCommand: cd backend && npm install
-startCommand: cd backend && node server.js
-       autoDeploy: true
+    name: suad-busi-tech-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
