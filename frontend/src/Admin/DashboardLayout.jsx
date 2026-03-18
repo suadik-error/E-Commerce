@@ -69,6 +69,13 @@ const DashboardLayout = () => {
     setSearchTerm("");
   }, [location.pathname]);
 
+  useEffect(() => {
+    document.body.style.overflow = isSidebarOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isSidebarOpen]);
+
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;
   const userInitial = String(user?.name || "A").trim().charAt(0).toUpperCase();
 
@@ -139,8 +146,14 @@ const DashboardLayout = () => {
                   onChange={(event) => {
                     setSearchTerm(event.target.value);
                     setShowSearchResults(true);
+                    setShowNotifications(false);
+                    setShowProfileMenu(false);
                   }}
-                  onFocus={() => setShowSearchResults(true)}
+                  onFocus={() => {
+                    setShowSearchResults(true);
+                    setShowNotifications(false);
+                    setShowProfileMenu(false);
+                  }}
                 />
               </form>
 
@@ -171,7 +184,11 @@ const DashboardLayout = () => {
                 type="button"
                 className="admin-icon-btn admin-notify-btn"
                 aria-label="Notifications"
-                onClick={() => setShowNotifications((value) => !value)}
+                onClick={() => {
+                  setShowNotifications((value) => !value);
+                  setShowSearchResults(false);
+                  setShowProfileMenu(false);
+                }}
               >
                 <Bell size={18} />
                 {unreadCount > 0 && <span className="admin-dot" />}
@@ -211,7 +228,11 @@ const DashboardLayout = () => {
               <button
                 type="button"
                 className="admin-profile-chip"
-                onClick={() => setShowProfileMenu((value) => !value)}
+                onClick={() => {
+                  setShowProfileMenu((value) => !value);
+                  setShowSearchResults(false);
+                  setShowNotifications(false);
+                }}
               >
                 <span className="admin-avatar">{userInitial}</span>
                 <div className="admin-profile-copy">

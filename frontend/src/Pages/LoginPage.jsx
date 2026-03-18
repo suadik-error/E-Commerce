@@ -54,6 +54,14 @@ const LoginPage = () => {
         throw new Error(data.message || "Login failed");
       }
 
+      if (data?.accessToken) {
+        window.dispatchEvent(
+          new CustomEvent("auth:token", {
+            detail: { accessToken: data.accessToken },
+          })
+        );
+      }
+
       let role = (data.user || data)?.role;
 
       try {

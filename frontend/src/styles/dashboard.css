@@ -1233,7 +1233,8 @@
   .admin-sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.34);
+    background: rgba(15, 23, 42, 0.46);
+    backdrop-filter: blur(2px);
     z-index: 998;
   }
 
@@ -1285,6 +1286,31 @@
   .admin-page-intro {
     flex-direction: column;
   }
+
+  .admin-sidebar {
+    width: min(320px, calc(100vw - 28px));
+    border-radius: 0 24px 24px 0;
+  }
+
+  .admin-search-wrap {
+    width: 100%;
+  }
+
+  .admin-search-shell {
+    width: 100%;
+  }
+
+  .admin-search-results,
+  .admin-notification-panel,
+  .admin-profile-menu {
+    width: 100%;
+    max-width: none;
+  }
+
+  .admin-notification-panel,
+  .admin-profile-menu {
+    right: 0;
+  }
 }
 
 @media (max-width: 600px) {
@@ -1298,6 +1324,68 @@
 
   .admin-line-chart {
     height: 280px;
+  }
+
+  .admin-topbar {
+    padding: 12px 12px 0;
+    gap: 12px;
+  }
+
+  .admin-topbar-left,
+  .admin-topbar-right {
+    gap: 10px;
+  }
+
+  .admin-icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .admin-search-shell {
+    height: 50px;
+    border-radius: 14px;
+    padding: 0 14px;
+  }
+
+  .admin-search-results,
+  .admin-notification-panel,
+  .admin-profile-menu {
+    top: calc(100% + 8px);
+    border-radius: 16px;
+    padding: 8px;
+  }
+
+  .admin-search-result,
+  .admin-notification-item,
+  .admin-profile-menu-item {
+    padding: 11px 10px;
+    border-radius: 12px;
+  }
+
+  .admin-sidebar {
+    width: calc(100vw - 18px);
+  }
+
+  .admin-sidebar-brand {
+    padding: 20px 16px 14px;
+  }
+
+  .admin-sidebar-brand h2 {
+    font-size: 22px;
+  }
+
+  .admin-sidebar-scroll {
+    padding: 0 10px 14px;
+  }
+
+  .admin-sidebar-menu a {
+    padding: 11px 12px;
+    border-radius: 12px;
+  }
+
+  .admin-sidebar-footer {
+    padding: 12px;
   }
 }
 

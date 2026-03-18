@@ -71,6 +71,7 @@ export const signup = async (req, res) => {
 			name: user.name,
 			email: user.email,
 			role: user.role,
+			accessToken,
 		});
 		
 	} catch (error) {
@@ -96,6 +97,7 @@ export const login = async (req, res) => {
 
 			res.status(200).json({
 				message: "Login successful",
+				accessToken,
 				user:{
 				_id: user._id,
 				name: user.name,
@@ -160,7 +162,7 @@ export const refreshToken = async (req, res) => {
             maxAge: 15 * 60 * 1000,
         });
 
-        res.json({ message: "Token refreshed successfully" });
+        res.json({ message: "Token refreshed successfully", accessToken });
     } catch (error) {
         res.status(500).json({ message: "Server error" });
     }
