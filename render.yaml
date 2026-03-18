@@ -5,3 +5,13 @@ services:
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
+  - type: web
+    name: suad-busi-tech-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
