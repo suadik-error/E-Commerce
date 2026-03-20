@@ -1590,6 +1590,10 @@
   }
 
   .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
     transform: translateX(-100%);
     transition: transform 0.22s ease;
   }
