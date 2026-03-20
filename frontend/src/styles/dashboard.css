@@ -1643,6 +1643,17 @@
     width: auto;
   }
 
+  .admin-topbar-minimal .admin-topbar-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .admin-topbar-minimal .admin-topbar-right {
+    width: auto;
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+
   .admin-dashboard-content {
     padding: 16px;
   }
@@ -1652,8 +1663,8 @@
   }
 
   .admin-sidebar {
-    width: min(320px, calc(100vw - 28px));
-    border-radius: 0 24px 24px 0;
+    width: 100vw;
+    border-radius: 0;
   }
 
   .admin-sidebar-utility {
@@ -1684,6 +1695,17 @@
     gap: 10px;
   }
 
+  .admin-topbar-minimal .admin-topbar-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .admin-topbar-minimal .admin-topbar-right {
+    width: auto;
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+
   .admin-topbar-title strong {
     font-size: 20px;
   }
@@ -1699,7 +1721,7 @@
   }
 
   .admin-sidebar {
-    width: calc(100vw - 18px);
+    width: 100vw;
   }
 
   .admin-sidebar-brand {

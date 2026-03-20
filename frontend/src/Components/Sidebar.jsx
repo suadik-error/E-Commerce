@@ -1,7 +1,6 @@
 import { NavLink } from "react-router-dom";
 import {
   BarChart3,
-  Bell,
   CreditCard,
   LayoutDashboard,
   LogOut,
@@ -33,13 +32,10 @@ const Sidebar = ({
   isOpen = false,
   onClose = () => {},
   user = null,
-  notifications = [],
-  unreadCount = 0,
   searchTerm = "",
   onSearchChange = () => {},
   searchItems = [],
   onSearchSelect = () => {},
-  onNotificationClick = () => {},
   onLogout = () => {},
 }) => {
   const userInitial = String(user?.name || "A").trim().charAt(0).toUpperCase();
@@ -127,39 +123,6 @@ const Sidebar = ({
               <nav className="sidebar-menu admin-sidebar-menu">
                 {secondaryLinks.map(renderNavLink)}
               </nav>
-            </div>
-          </div>
-
-          <div className="admin-sidebar-group">
-            <span className="admin-sidebar-label">Updates</span>
-            <div className="admin-sidebar-message-card">
-              <div className="admin-sidebar-message-header">
-                <div className="admin-sidebar-message-title">
-                  <Bell size={16} />
-                  <span>Updates</span>
-                </div>
-                <small>{unreadCount} unread</small>
-              </div>
-
-              {notifications.length === 0 ? (
-                <p className="admin-empty-state">No notifications yet.</p>
-              ) : (
-                <div className="admin-sidebar-notification-list">
-                  {notifications.slice(0, 4).map((notification) => (
-                    <button
-                      key={notification._id}
-                      type="button"
-                      className={`admin-sidebar-notification-item ${
-                        notification.isRead ? "is-read" : "is-unread"
-                      }`}
-                      onClick={() => onNotificationClick(notification._id)}
-                    >
-                      <strong>{notification.title || "Notification"}</strong>
-                      <span>{notification.message || "Open to review details."}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Bell, Menu, X } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -37,6 +37,7 @@ const DashboardLayout = () => {
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "light");
@@ -75,6 +76,7 @@ const DashboardLayout = () => {
   useEffect(() => {
     setSearchTerm("");
     setIsSidebarOpen(false);
+    setIsNotificationsOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -126,13 +128,10 @@ const DashboardLayout = () => {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         user={user}
-        notifications={notifications}
-        unreadCount={unreadCount}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         searchItems={filteredSearchItems}
         onSearchSelect={(path) => navigate(path)}
-        onNotificationClick={handleMarkAsRead}
         onLogout={handleLogout}
       />
 
@@ -150,6 +149,48 @@ const DashboardLayout = () => {
             <div className="admin-topbar-title">
               <strong>{getAdminPageTitle(location.pathname)}</strong>
               <span>Admin workspace</span>
+            </div>
+          </div>
+          <div className="admin-topbar-right">
+            <div className="admin-notification-wrap">
+              <button
+                type="button"
+                className="admin-icon-btn admin-notify-btn"
+                onClick={() => setIsNotificationsOpen((value) => !value)}
+                aria-label={isNotificationsOpen ? "Close messages" : "Open messages"}
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && <span className="admin-dot">{unreadCount > 9 ? "9+" : unreadCount}</span>}
+              </button>
+
+              {isNotificationsOpen && (
+                <div className="admin-notification-panel">
+                  <div className="admin-notification-header">
+                    <strong>Messages</strong>
+                    <span>{unreadCount} unread</span>
+                  </div>
+
+                  {notifications.length === 0 ? (
+                    <p className="admin-empty-state">No notifications yet.</p>
+                  ) : (
+                    <div className="admin-notification-list">
+                      {notifications.slice(0, 6).map((notification) => (
+                        <button
+                          key={notification._id}
+                          type="button"
+                          className={`admin-notification-item ${
+                            notification.isRead ? "" : "is-unread"
+                          }`}
+                          onClick={() => handleMarkAsRead(notification._id)}
+                        >
+                          <strong>{notification.title || "Notification"}</strong>
+                          <span>{notification.message || "Open to review details."}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </header>
