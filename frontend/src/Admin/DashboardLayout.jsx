@@ -149,7 +149,7 @@ const DashboardLayout = () => {
             </button>
             <div className="admin-topbar-title">
               <strong>{getAdminPageTitle(location.pathname)}</strong>
-              <span>{unreadCount} unread notifications</span>
+              <span>Admin workspace</span>
             </div>
           </div>
         </header>

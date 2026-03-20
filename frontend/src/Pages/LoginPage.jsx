@@ -71,7 +71,7 @@ const LoginPage = () => {
         if (profileRes.ok) {
           const profile = await profileRes.json();
           role = profile?.role ?? role;
-        }why
+        }
       } catch (_) {
       }
 

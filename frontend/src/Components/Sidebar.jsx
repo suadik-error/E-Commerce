@@ -11,7 +11,6 @@ import {
   Settings,
   Shield,
   ShoppingCart,
-  UserCircle2,
   Users,
   X,
 } from "lucide-react";
@@ -28,7 +27,6 @@ const secondaryLinks = [
   { to: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/dashboard/messages", label: "Messages", icon: MessageSquare },
   { to: "/dashboard/security", label: "Security", icon: Shield },
-  { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 const Sidebar = ({
@@ -120,21 +118,20 @@ const Sidebar = ({
           </div>
 
           <div className="admin-sidebar-group">
-            <span className="admin-sidebar-label">Menu</span>
-            <nav className="sidebar-menu admin-sidebar-menu">
-              {primaryLinks.map(renderNavLink)}
-            </nav>
+            <span className="admin-sidebar-label">Navigation</span>
+            <div className="admin-sidebar-nav-card">
+              <nav className="sidebar-menu admin-sidebar-menu">
+                {primaryLinks.map(renderNavLink)}
+              </nav>
+              <div className="admin-sidebar-divider" />
+              <nav className="sidebar-menu admin-sidebar-menu">
+                {secondaryLinks.map(renderNavLink)}
+              </nav>
+            </div>
           </div>
 
           <div className="admin-sidebar-group">
-            <span className="admin-sidebar-label">Workspace</span>
-            <nav className="sidebar-menu admin-sidebar-menu">
-              {secondaryLinks.map(renderNavLink)}
-            </nav>
-          </div>
-
-          <div className="admin-sidebar-group">
-            <span className="admin-sidebar-label">Notifications</span>
+            <span className="admin-sidebar-label">Updates</span>
             <div className="admin-sidebar-message-card">
               <div className="admin-sidebar-message-header">
                 <div className="admin-sidebar-message-title">
@@ -166,7 +163,7 @@ const Sidebar = ({
             </div>
           </div>
 
-          <div className="admin-sidebar-group">
+          <div className="admin-sidebar-group admin-sidebar-account-group">
             <span className="admin-sidebar-label">Account</span>
             <div className="admin-sidebar-account-actions">
               <NavLink
@@ -183,10 +180,6 @@ const Sidebar = ({
               <NavLink to="/dashboard/settings" onClick={onClose}>
                 <Settings size={16} />
                 <span>Settings</span>
-              </NavLink>
-              <NavLink to="/dashboard/settings?tab=profile" onClick={onClose}>
-                <UserCircle2 size={16} />
-                <span>Profile</span>
               </NavLink>
             </div>
           </div>

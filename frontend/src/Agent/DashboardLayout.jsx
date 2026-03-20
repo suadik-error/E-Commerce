@@ -1,27 +1,37 @@
-﻿import { useState, useEffect } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
-LayoutDashboard,
+  LayoutDashboard,
+  LogOut,
+  Menu,
   Package,
   ShoppingCart,
-  LogOut,
-  Bell,
-  User
+  User,
+  X,
 } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
-
 const AgentDashboardLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-  const [showNotifications, setShowNotifications] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchUser();
-    fetchNotifications();
   }, []);
+
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = isSidebarOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isSidebarOpen]);
 
   const fetchUser = async () => {
     try {
@@ -37,20 +47,6 @@ const AgentDashboardLayout = () => {
     }
   };
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNotifications(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch notifications");
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await fetch(`${API_BASE_URL}/api/auth/logout`, {
@@ -62,44 +58,45 @@ const AgentDashboardLayout = () => {
     }
   };
 
-  const markAsRead = async (id) => {
-    try {
-      await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
-        method: "PUT",
-        credentials: "include",
-      });
-      fetchNotifications();
-    } catch (err) {
-      console.error("Failed to mark as read");
-    }
-  };
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-
   return (
     <div className="dashboard-layout agent-dashboard">
-      <aside className="sidebar">
+      <div
+        className={`mobile-sidebar-backdrop ${isSidebarOpen ? "is-visible" : ""}`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
+      <aside className={`sidebar mobile-dashboard-sidebar ${isSidebarOpen ? "is-open" : ""}`}>
         <div className="sidebar-logo">
-          <h2>Agent<span>Panel</span></h2>
+          <h2>
+            Agent<span>Panel</span>
+          </h2>
+          <button
+            type="button"
+            className="mobile-sidebar-close"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         <nav className="sidebar-menu">
-          <NavLink to="/agent" end>
+          <NavLink to="/agent" end onClick={() => setIsSidebarOpen(false)}>
             <LayoutDashboard size={20} />
             <span>Overview</span>
           </NavLink>
 
-          <NavLink to="/agent/products">
+          <NavLink to="/agent/products" onClick={() => setIsSidebarOpen(false)}>
             <Package size={20} />
             <span>Products</span>
           </NavLink>
 
-          <NavLink to="/agent/sales">
+          <NavLink to="/agent/sales" onClick={() => setIsSidebarOpen(false)}>
             <ShoppingCart size={20} />
             <span>My Sales</span>
           </NavLink>
 
-          <NavLink to="/agent/profile">
+          <NavLink to="/agent/profile" onClick={() => setIsSidebarOpen(false)}>
             <User size={20} />
             <span>Profile</span>
           </NavLink>
@@ -114,20 +111,19 @@ const AgentDashboardLayout = () => {
       </aside>
 
       <main className="dashboard-content">
-        <header className="dashboard-header">
+        <header className="dashboard-header mobile-dashboard-header">
           <div className="header-left">
+            <button
+              type="button"
+              className="dashboard-menu-btn"
+              onClick={() => setIsSidebarOpen((value) => !value)}
+              aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
+            >
+              {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
             <h2>Welcome, {user?.name || "Agent"}</h2>
           </div>
           <div className="header-right">
-            <button
-              className="notification-btn"
-              onClick={() => setShowNotifications(!showNotifications)}
-            >
-              <Bell size={20} />
-              {unreadCount > 0 && (
-                <span className="notification-badge">{unreadCount}</span>
-              )}
-            </button>
             <button
               className="notification-btn"
               onClick={() => navigate("/agent/products")}
@@ -135,30 +131,6 @@ const AgentDashboardLayout = () => {
             >
               <ShoppingCart size={20} />
             </button>
-            {showNotifications && (
-              <div className="notifications-dropdown">
-                <h3>Notifications</h3>
-                {notifications.length === 0 ? (
-                  <p>No notifications</p>
-                ) : (
-                  <ul>
-                    {notifications.slice(0, 5).map((notif) => (
-                      <li
-                        key={notif._id}
-                        className={notif.isRead ? "read" : "unread"}
-                        onClick={() => markAsRead(notif._id)}
-                      >
-                        <strong>{notif.title}</strong>
-                        <p>{notif.message}</p>
-                        <small>
-                          {new Date(notif.createdAt).toLocaleString()}
-                        </small>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
           </div>
         </header>
 
