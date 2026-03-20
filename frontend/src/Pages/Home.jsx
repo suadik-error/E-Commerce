@@ -32,10 +32,10 @@ const Home = () => {
       <section className="home-hero">
         <div className="home-hero-grid">
           <div className="home-hero-copy">
-            <span className="home-badge">Suad Business Tech</span>
+            <span className="home-badge">Busi-Tech</span>
             <h1>One business platform for managing products, sales, people, and daily operations.</h1>
             <p>
-              Suad Business Tech brings your operational workflow into one place.
+              Busi-Tech brings your operational workflow into one place.
               Instead of managing products in one tool, tracking payments in another,
               and coordinating staff manually, you get a connected workspace built
               for admins, managers, and agents working as one team.

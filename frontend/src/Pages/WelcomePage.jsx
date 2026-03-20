@@ -28,7 +28,7 @@ const WelcomePage = () => {
       <section className="hero">
         <div className="overlay hero-layout">
           <div className="hero-copy">
-            <span className="hero-kicker">Suad Business Tech</span>
+            <span className="hero-kicker">Busi-Tech</span>
             <h1>Modern commerce operations for teams that need clarity.</h1>
             <p>
               Manage products, payments, team roles, and sales activity from a
@@ -98,7 +98,7 @@ const WelcomePage = () => {
       </section>
 
       <footer className="footer">
-        <p>&copy; {new Date().getFullYear()} Suad Business Tech</p>
+        <p>&copy; {new Date().getFullYear()} Busi-Tech</p>
       </footer>
     </div>
   );

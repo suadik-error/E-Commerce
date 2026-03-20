@@ -56,9 +56,9 @@ const Sidebar = ({
 
       <aside className={`sidebar admin-sidebar ${isOpen ? "is-open" : ""}`}>
         <div className="sidebar-logo admin-sidebar-brand">
-          <div className="admin-sidebar-logo-mark">SB</div>
+          <div className="admin-sidebar-logo-mark">BT</div>
           <div>
-            <h2>Suad Admin</h2>
+            <h2>Busi-Tech</h2>
             <p>Control center</p>
           </div>
 

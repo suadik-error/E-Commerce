@@ -92,7 +92,7 @@ const LoginPage = () => {
     <div className="login-container">
       <div className="auth-shell">
         <div className="auth-brand">
-          <span className="auth-kicker">Business Commerce Suite</span>
+          <span className="auth-kicker">Busi-Tech</span>
           <h1>Run products, sales, and team workflows from one place.</h1>
           <p>
             Sign in to manage inventory, track orders, monitor payments, and

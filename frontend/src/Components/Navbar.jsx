@@ -81,9 +81,9 @@ const Navbar = () => {
     <header className="navbar">
       <div className="navbar-left">
         <NavLink to="/" className="brand-mark">
-          <span className="brand-badge">SB</span>
+          <span className="brand-badge">BT</span>
           <div className="brand-copy">
-            <strong>Suad Business Tech</strong>
+            <strong>Busi-Tech</strong>
             <small>Commerce operations platform</small>
           </div>
         </NavLink>
