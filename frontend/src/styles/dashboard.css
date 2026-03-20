@@ -1594,6 +1594,9 @@
     top: 0;
     left: 0;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     transform: translateX(-100%);
     transition: transform 0.22s ease;
   }
@@ -1621,6 +1624,31 @@
   .admin-menu-btn,
   .admin-sidebar-close {
     display: inline-flex;
+  }
+
+  .admin-sidebar-brand,
+  .admin-sidebar-footer {
+    display: flex;
+  }
+
+  .admin-sidebar-scroll {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+  }
+
+  .admin-sidebar-menu {
+    flex-direction: column;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .admin-sidebar-menu a {
+    flex: initial;
+    white-space: normal;
+    margin: 0;
   }
 }
 
