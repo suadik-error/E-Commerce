@@ -1639,13 +1639,23 @@
     overflow-y: auto;
   }
 
+  .admin-sidebar-nav-card,
+  .admin-sidebar-account-actions {
+    display: flex;
+    flex-direction: column;
+  }
+
   .admin-sidebar-menu {
+    display: flex;
     flex-direction: column;
     overflow: visible;
     padding: 0;
+    width: 100%;
   }
 
   .admin-sidebar-menu a {
+    display: flex;
+    width: 100%;
     flex: initial;
     white-space: normal;
     margin: 0;
