@@ -52,6 +52,12 @@ const Settings = () => {
     }
   }, [location.search]);
 
+  useEffect(() => {
+    const nextTheme = profile.theme || localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    localStorage.setItem("theme", nextTheme);
+  }, [profile.theme]);
+
   const fetchProfile = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/auth/profile`, {
@@ -131,6 +137,11 @@ const Settings = () => {
         setProfilePictureFile(nextFile);
       }
       return;
+    }
+
+    if (name === "theme") {
+      document.documentElement.setAttribute("data-theme", value);
+      localStorage.setItem("theme", value);
     }
 
     setProfile((prev) => ({
