@@ -207,7 +207,6 @@ export const updateProfile = async (req, res) => {
 			primaryColor,
 			accentColor,
 			sidebarPlacement,
-			navbarPlacement,
 			language,
 			timezone,
 			twoFactor,
@@ -260,9 +259,7 @@ export const updateProfile = async (req, res) => {
 			updates.sidebarPlacement = sidebarPlacement;
 		}
 
-		if (typeof navbarPlacement === "string" && ["top", "bottom"].includes(navbarPlacement)) {
-			updates.navbarPlacement = navbarPlacement;
-		}
+		updates.navbarPlacement = "top";
 
 		if (typeof language === "string" && language.trim()) {
 			updates.language = language.trim();

@@ -129,7 +129,7 @@ const AgentDashboardLayout = () => {
         </div>
       </aside>
 
-      <main className={`dashboard-content navbar-${branding.navbarPlacement}`}>
+      <main className="dashboard-content">
         <header className="dashboard-header mobile-dashboard-header">
           <div className="header-left">
             <button

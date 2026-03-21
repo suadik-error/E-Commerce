@@ -136,7 +136,7 @@ const DashboardLayout = () => {
         onLogout={handleLogout}
       />
 
-      <div className={`admin-dashboard-main navbar-${branding.navbarPlacement}`}>
+      <div className="admin-dashboard-main">
         <header className="admin-topbar admin-topbar-minimal">
           <div className="admin-topbar-left">
             <button

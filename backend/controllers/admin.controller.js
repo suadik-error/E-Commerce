@@ -14,7 +14,6 @@ export const createAdminRequest = async (req, res) => {
       preferredPrimaryColor,
       preferredAccentColor,
       preferredSidebarPlacement,
-      preferredNavbarPlacement,
     } = req.body;
 
     const companyLogo = req.files?.companyLogo?.[0]?.path || "";
@@ -30,7 +29,7 @@ export const createAdminRequest = async (req, res) => {
       preferredPrimaryColor,
       preferredAccentColor,
       preferredSidebarPlacement,
-      preferredNavbarPlacement,
+      preferredNavbarPlacement: "top",
       documents: {
         businessDoc: req.files.businessDoc[0].path,
         ownerId: req.files.ownerId[0].path,
@@ -51,9 +50,7 @@ export const createAdminRequest = async (req, res) => {
       ...(preferredSidebarPlacement === "left" || preferredSidebarPlacement === "right"
         ? { sidebarPlacement: preferredSidebarPlacement }
         : {}),
-      ...(preferredNavbarPlacement === "top" || preferredNavbarPlacement === "bottom"
-        ? { navbarPlacement: preferredNavbarPlacement }
-        : {}),
+      navbarPlacement: "top",
     });
 
     res.status(201).json({

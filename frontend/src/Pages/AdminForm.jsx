@@ -18,7 +18,6 @@ const AdminForm = () => {
     preferredPrimaryColor: "#12b76a",
     preferredAccentColor: "#3154ff",
     preferredSidebarPlacement: "left",
-    preferredNavbarPlacement: "top",
     businessDoc: null,
     ownerId: null,
     financeDoc: null,
@@ -130,14 +129,6 @@ const AdminForm = () => {
               <select name="preferredSidebarPlacement" value={formData.preferredSidebarPlacement} onChange={handleChange}>
                 <option value="left">Left</option>
                 <option value="right">Right</option>
-              </select>
-            </label>
-
-            <label>
-              Navbar Placement
-              <select name="preferredNavbarPlacement" value={formData.preferredNavbarPlacement} onChange={handleChange}>
-                <option value="top">Top</option>
-                <option value="bottom">Bottom</option>
               </select>
             </label>
           </div>

@@ -28,7 +28,6 @@ const Settings = () => {
     primaryColor: "#12b76a",
     accentColor: "#3154ff",
     sidebarPlacement: "left",
-    navbarPlacement: "top",
     sessionTimeout: MIN_SESSION_TIMEOUT,
   });
   const [profilePictureFile, setProfilePictureFile] = useState(null);
@@ -78,7 +77,6 @@ const Settings = () => {
       payload.append("primaryColor", profile.primaryColor || "#12b76a");
       payload.append("accentColor", profile.accentColor || "#3154ff");
       payload.append("sidebarPlacement", profile.sidebarPlacement || "left");
-      payload.append("navbarPlacement", profile.navbarPlacement || "top");
       if (profile.language) payload.append("language", profile.language);
       if (profile.timezone) payload.append("timezone", profile.timezone);
       if (typeof profile.twoFactor === "boolean") {
@@ -398,22 +396,6 @@ const Settings = () => {
                     >
                       <option value="left">Left</option>
                       <option value="right">Right</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="navbarPlacement">
-                      <LayoutTemplate size={16} />
-                      Navbar Placement
-                    </label>
-                    <select
-                      id="navbarPlacement"
-                      name="navbarPlacement"
-                      value={profile.navbarPlacement || "top"}
-                      onChange={handleChange}
-                    >
-                      <option value="top">Top</option>
-                      <option value="bottom">Bottom</option>
                     </select>
                   </div>
 

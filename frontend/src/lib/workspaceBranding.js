@@ -29,8 +29,7 @@ export const getWorkspaceBranding = (profile) => ({
   accentColor: cleanHex(profile?.accentColor, DEFAULT_ACCENT_COLOR),
   sidebarPlacement:
     profile?.sidebarPlacement === "right" ? "right" : DEFAULT_SIDEBAR_PLACEMENT,
-  navbarPlacement:
-    profile?.navbarPlacement === "bottom" ? "bottom" : DEFAULT_NAVBAR_PLACEMENT,
+  navbarPlacement: DEFAULT_NAVBAR_PLACEMENT,
 });
 
 export const applyWorkspaceAppearance = (profile) => {
@@ -42,7 +41,7 @@ export const applyWorkspaceAppearance = (profile) => {
   root.style.setProperty("--workspace-primary", branding.primaryColor);
   root.style.setProperty("--workspace-accent", branding.accentColor);
   root.setAttribute("data-sidebar-placement", branding.sidebarPlacement);
-  root.setAttribute("data-navbar-placement", branding.navbarPlacement);
+  root.setAttribute("data-navbar-placement", DEFAULT_NAVBAR_PLACEMENT);
 
   if (profile?.theme) {
     root.setAttribute("data-theme", profile.theme);
