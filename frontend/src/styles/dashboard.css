@@ -1223,8 +1223,8 @@
 .admin-welcome-card {
   padding: 28px;
   background:
-    radial-gradient(circle at top right, rgba(70, 95, 255, 0.12), transparent 34%),
-    linear-gradient(135deg, #ffffff 0%, #f7fbff 100%);
+    radial-gradient(circle at top right, rgba(70, 95, 255, 0.08), transparent 34%),
+    linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
 }
 
 .admin-welcome-badge {
@@ -1241,7 +1241,7 @@
 
 .admin-welcome-card h2 {
   margin: 18px 0 12px;
-  color: #12b76a;
+  color: #101828;
   font-size: 34px;
   letter-spacing: -0.03em;
 }
@@ -1275,15 +1275,15 @@
 }
 
 .admin-primary-action {
-  background: #12b76a;
+  background: linear-gradient(135deg, #3154ff, #465fff);
   color: #ffffff;
-  box-shadow: 0 12px 24px rgba(18, 183, 106, 0.22);
+  box-shadow: 0 12px 24px rgba(49, 84, 255, 0.22);
 }
 
 .admin-secondary-action {
-  border: 1px solid #b9d5c5;
+  border: 1px solid #dbe3f2;
   background: #ffffff;
-  color: #0f8b50;
+  color: #3154ff;
 }
 
 .admin-primary-action:hover,
@@ -1387,7 +1387,7 @@
 }
 
 .admin-activity-feed-dot.success {
-  background: #12b76a;
+  background: #3154ff;
 }
 
 .admin-activity-feed-dot.pending {
@@ -1416,8 +1416,8 @@
 }
 
 .admin-activity-feed-status.success {
-  background: #e8fff2;
-  color: #0f8b50;
+  background: #eef2ff;
+  color: #3154ff;
 }
 
 .admin-activity-feed-status.pending {
@@ -1521,7 +1521,7 @@
 :root[data-theme="dark"] .admin-welcome-card,
 :root[data-theme="auto"] .admin-welcome-card {
   background:
-    radial-gradient(circle at top right, rgba(142, 166, 255, 0.18), transparent 34%),
+    radial-gradient(circle at top right, rgba(142, 166, 255, 0.12), transparent 34%),
     linear-gradient(135deg, #18212f 0%, #111927 100%);
 }
 
@@ -1817,7 +1817,7 @@
 :root[data-theme="auto"] .admin-secondary-action {
   background: #111927;
   border-color: #31435d;
-  color: #8ee0b0;
+  color: #8ea6ff;
 }
 
 .admin-target-stats span {

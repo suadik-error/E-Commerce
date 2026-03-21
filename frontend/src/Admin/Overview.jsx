@@ -264,9 +264,9 @@ const AdminOverview = () => {
         <article className="admin-welcome-card">
           <span className="admin-welcome-badge">
             <Sparkles size={16} />
-            Operations workspace
+            Workspace overview
           </span>
-          <h2>Welcome to Busi-Tech</h2>
+          <h2>Admin workspace overview</h2>
           <p>
             Run your daily sales, managers, agents, products, and payment follow-up
             from one admin surface. Use the shortcuts below to move directly into
