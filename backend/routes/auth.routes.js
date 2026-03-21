@@ -12,7 +12,15 @@ router.post("/logout", logout);
 router.post("/refresh-token", refreshToken);
 router.get("/profile", protectRoute, getProfile);
 router.post("/profile", protectRoute, getProfile);
-router.put("/profile", protectRoute, uploadProfile.single("profilePicture"), updateProfile);
+router.put(
+  "/profile",
+  protectRoute,
+  uploadProfile.fields([
+    { name: "profilePicture", maxCount: 1 },
+    { name: "companyLogo", maxCount: 1 },
+  ]),
+  updateProfile
+);
 router.post("/change-password", protectRoute, changePassword);
 
 

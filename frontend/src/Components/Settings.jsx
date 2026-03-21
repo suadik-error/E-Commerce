@@ -1,12 +1,19 @@
-﻿import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import { User, Mail, Shield, Key, Camera } from "lucide-react";
+import {
+  Camera,
+  Key,
+  LayoutTemplate,
+  Mail,
+  Palette,
+  Shield,
+  User,
+} from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 const MIN_SESSION_TIMEOUT = 15;
 const MAX_SESSION_TIMEOUT = 60;
-
 
 const Settings = () => {
   const location = useLocation();
@@ -16,10 +23,16 @@ const Settings = () => {
     role: "",
     notifications: true,
     theme: "light",
+    companyName: "",
+    companyLogo: "",
+    primaryColor: "#12b76a",
+    accentColor: "#3154ff",
+    sidebarPlacement: "left",
+    navbarPlacement: "top",
     sessionTimeout: MIN_SESSION_TIMEOUT,
   });
   const [profilePictureFile, setProfilePictureFile] = useState(null);
-
+  const [companyLogoFile, setCompanyLogoFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [passwordData, setPasswordData] = useState({
@@ -35,7 +48,7 @@ const Settings = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("tab");
-    if (tab && ["profile", "security"].includes(tab)) {
+    if (tab && ["profile", "workspace", "security"].includes(tab)) {
       setActiveTab(tab);
     }
   }, [location.search]);
@@ -45,7 +58,7 @@ const Settings = () => {
       const res = await axios.get(`${API_BASE_URL}/api/auth/profile`, {
         withCredentials: true,
       });
-      setProfile({ ...profile, ...res.data });
+      setProfile((prev) => ({ ...prev, ...res.data }));
     } catch (error) {
       console.error("Failed to fetch profile");
     }
@@ -61,6 +74,11 @@ const Settings = () => {
       payload.append("email", profile.email);
       payload.append("notifications", String(profile.notifications));
       payload.append("theme", profile.theme || "light");
+      payload.append("companyName", profile.companyName || "");
+      payload.append("primaryColor", profile.primaryColor || "#12b76a");
+      payload.append("accentColor", profile.accentColor || "#3154ff");
+      payload.append("sidebarPlacement", profile.sidebarPlacement || "left");
+      payload.append("navbarPlacement", profile.navbarPlacement || "top");
       if (profile.language) payload.append("language", profile.language);
       if (profile.timezone) payload.append("timezone", profile.timezone);
       if (typeof profile.twoFactor === "boolean") {
@@ -71,12 +89,18 @@ const Settings = () => {
         String(
           Math.min(
             MAX_SESSION_TIMEOUT,
-            Math.max(MIN_SESSION_TIMEOUT, Number(profile.sessionTimeout) || MIN_SESSION_TIMEOUT)
+            Math.max(
+              MIN_SESSION_TIMEOUT,
+              Number(profile.sessionTimeout) || MIN_SESSION_TIMEOUT
+            )
           )
         )
       );
       if (profilePictureFile) {
         payload.append("profilePicture", profilePictureFile);
+      }
+      if (companyLogoFile) {
+        payload.append("companyLogo", companyLogoFile);
       }
 
       const res = await axios.put(`${API_BASE_URL}/api/auth/profile`, payload, {
@@ -89,6 +113,8 @@ const Settings = () => {
       }
       alert("Profile updated successfully!");
       setProfilePictureFile(null);
+      setCompanyLogoFile(null);
+      setProfile((prev) => ({ ...prev, ...res.data }));
     } catch (error) {
       console.error("Failed to update profile");
       alert("Failed to update profile");
@@ -100,18 +126,27 @@ const Settings = () => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "file") {
-      setProfilePictureFile(e.target.files?.[0] || null);
+      const nextFile = e.target.files?.[0] || null;
+      if (name === "companyLogo") {
+        setCompanyLogoFile(nextFile);
+      } else {
+        setProfilePictureFile(nextFile);
+      }
       return;
     }
-    setProfile({
-      ...profile,
+
+    setProfile((prev) => ({
+      ...prev,
       [name]:
         name === "sessionTimeout"
-          ? Math.min(MAX_SESSION_TIMEOUT, Math.max(MIN_SESSION_TIMEOUT, Number(value) || MIN_SESSION_TIMEOUT))
+          ? Math.min(
+              MAX_SESSION_TIMEOUT,
+              Math.max(MIN_SESSION_TIMEOUT, Number(value) || MIN_SESSION_TIMEOUT)
+            )
           : type === "checkbox"
-          ? checked
-          : value,
-    });
+            ? checked
+            : value,
+    }));
   };
 
   const handlePasswordChange = async (e) => {
@@ -142,6 +177,7 @@ const Settings = () => {
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
+    { id: "workspace", label: "Workspace", icon: LayoutTemplate },
     { id: "security", label: "Security", icon: Shield },
   ];
 
@@ -149,7 +185,7 @@ const Settings = () => {
     <div className="settings-page">
       <div className="page-header">
         <h1>Settings</h1>
-        <p>Manage your profile details and account security</p>
+        <p>Manage your profile, workspace branding, and account security</p>
       </div>
 
       <div className="settings-container">
@@ -225,6 +261,7 @@ const Settings = () => {
                       onChange={handleChange}
                     />
                   </div>
+
                   <div className="form-group">
                     <label htmlFor="name">
                       <User size={16} />
@@ -260,14 +297,141 @@ const Settings = () => {
                       <Shield size={16} />
                       Role
                     </label>
+                    <input type="text" id="role" name="role" value={profile.role} readOnly />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === "workspace" && (
+            <>
+              <div className="settings-card">
+                <h2>
+                  <Palette size={20} />
+                  Workspace Branding
+                </h2>
+
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label htmlFor="companyName">
+                      <User size={16} />
+                      Workspace Name
+                    </label>
                     <input
                       type="text"
-                      id="role"
-                      name="role"
-                      value={profile.role}
+                      id="companyName"
+                      name="companyName"
+                      value={profile.companyName || ""}
                       onChange={handleChange}
-                      readOnly
+                      placeholder="Busi-Tech"
                     />
+                    <p className="field-description">
+                      This name is used as the dashboard brand and fallback initials.
+                    </p>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="companyLogo">
+                      <Camera size={16} />
+                      Company Logo
+                    </label>
+                    <input
+                      type="file"
+                      id="companyLogo"
+                      name="companyLogo"
+                      accept="image/*"
+                      onChange={handleChange}
+                    />
+                    <p className="field-description">
+                      If no logo is uploaded, the system uses your workspace name initials.
+                    </p>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="primaryColor">
+                      <Palette size={16} />
+                      Primary Color
+                    </label>
+                    <input
+                      type="color"
+                      id="primaryColor"
+                      name="primaryColor"
+                      value={profile.primaryColor || "#12b76a"}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="accentColor">
+                      <Palette size={16} />
+                      Accent Color
+                    </label>
+                    <input
+                      type="color"
+                      id="accentColor"
+                      name="accentColor"
+                      value={profile.accentColor || "#3154ff"}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-card">
+                <h2>
+                  <LayoutTemplate size={20} />
+                  Layout Placement
+                </h2>
+
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label htmlFor="sidebarPlacement">
+                      <LayoutTemplate size={16} />
+                      Sidebar Placement
+                    </label>
+                    <select
+                      id="sidebarPlacement"
+                      name="sidebarPlacement"
+                      value={profile.sidebarPlacement || "left"}
+                      onChange={handleChange}
+                    >
+                      <option value="left">Left</option>
+                      <option value="right">Right</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="navbarPlacement">
+                      <LayoutTemplate size={16} />
+                      Navbar Placement
+                    </label>
+                    <select
+                      id="navbarPlacement"
+                      name="navbarPlacement"
+                      value={profile.navbarPlacement || "top"}
+                      onChange={handleChange}
+                    >
+                      <option value="top">Top</option>
+                      <option value="bottom">Bottom</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="theme">
+                      <Palette size={16} />
+                      Theme
+                    </label>
+                    <select
+                      id="theme"
+                      name="theme"
+                      value={profile.theme || "light"}
+                      onChange={handleChange}
+                    >
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="auto">Auto</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -309,7 +473,9 @@ const Settings = () => {
                     name="currentPassword"
                     placeholder="Enter current password"
                     value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData((prev) => ({ ...prev, currentPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({ ...prev, currentPassword: e.target.value }))
+                    }
                   />
                 </div>
 
@@ -345,7 +511,9 @@ const Settings = () => {
                     placeholder="Enter new password"
                     minLength={8}
                     value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))
+                    }
                   />
                 </div>
 
@@ -361,11 +529,19 @@ const Settings = () => {
                     placeholder="Confirm new password"
                     minLength={8}
                     value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))
+                    }
                   />
                 </div>
+
                 <div className="form-group full-width">
-                  <button type="button" className="primary-btn" onClick={handlePasswordChange} disabled={loading}>
+                  <button
+                    type="button"
+                    className="primary-btn"
+                    onClick={handlePasswordChange}
+                    disabled={loading}
+                  >
                     {loading ? "Updating..." : "Change Password"}
                   </button>
                 </div>

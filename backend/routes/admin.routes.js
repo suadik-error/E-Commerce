@@ -12,6 +12,7 @@ router.post(
     { name: "businessDoc", maxCount: 1 },
     { name: "ownerId", maxCount: 1 },
     { name: "financeDoc", maxCount: 1 },
+    { name: "companyLogo", maxCount: 1 },
   ]),
   createAdminRequest
 );

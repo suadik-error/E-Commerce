@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  ArrowRight,
   BadgeDollarSign,
   BriefcaseBusiness,
   CircleDollarSign,
+  ClipboardList,
+  CreditCard,
   PackageCheck,
+  Sparkles,
   ShieldCheck,
   UsersRound,
 } from "lucide-react";
@@ -27,6 +31,32 @@ const getSellerLabel = (sale) => {
   if (sale?.agent?.name) return `Agent: ${sale.agent.name}`;
   if (sale?.manager?.name) return `Manager: ${sale.manager.name}`;
   return "N/A";
+};
+
+const buildActivityFeed = (sales, managers) => {
+  const saleItems = sales.slice(0, 4).map((sale) => ({
+    id: `sale-${sale._id}`,
+    title: `${sale.product?.name || "Product"} sale recorded`,
+    detail: `${sale.customerName || "Customer"} • ${getSellerLabel(sale)}`,
+    meta: formatDateTime(sale.soldAt || sale.createdAt),
+    timestamp: new Date(sale.soldAt || sale.createdAt || 0).getTime(),
+    status: sale.paymentStatus === "confirmed" ? "Confirmed payment" : "Pending payment",
+    tone: sale.paymentStatus === "confirmed" ? "success" : "pending",
+  }));
+
+  const managerItems = managers.slice(0, 3).map((manager) => ({
+    id: `manager-${manager._id}`,
+    title: `${manager.name || "Manager"} profile available`,
+    detail: manager.location || manager.email || "Manager workspace ready",
+    meta: manager.createdAt ? formatDateTime(manager.createdAt) : "Recently added",
+    timestamp: manager.createdAt ? new Date(manager.createdAt).getTime() : 0,
+    status: manager.isActive ? "Active manager" : "Needs review",
+    tone: manager.isActive ? "success" : "neutral",
+  }));
+
+  return [...saleItems, ...managerItems]
+    .sort((left, right) => right.timestamp - left.timestamp)
+    .slice(0, 6);
 };
 
 const buildMonthlyRevenueSeries = (sales) => {
@@ -148,6 +178,33 @@ const AdminOverview = () => {
   const revenueValues = salesSeries.map((entry) => entry.revenue);
   const revenuePath = buildRevenuePath(revenueValues);
   const highestMonthRevenue = Math.max(...revenueValues, 0);
+  const quickActions = [
+    {
+      label: "Add manager",
+      description: "Create a new management account and assign ownership.",
+      link: "/dashboard/managers",
+      icon: BriefcaseBusiness,
+    },
+    {
+      label: "Review agents",
+      description: "Check agent accounts, assignments, and access.",
+      link: "/dashboard/agents",
+      icon: UsersRound,
+    },
+    {
+      label: "Confirm payments",
+      description: "Clear pending sales and update payment status.",
+      link: "/dashboard/payments",
+      icon: CreditCard,
+    },
+    {
+      label: "View analytics",
+      description: "Open trend and reporting pages for performance review.",
+      link: "/dashboard/analytics",
+      icon: ClipboardList,
+    },
+  ];
+  const recentActivity = buildActivityFeed(recentSales, recentManagers);
 
   const statCards = [
     {
@@ -202,6 +259,73 @@ const AdminOverview = () => {
           <span>{stats.totalSales} completed sales tracked</span>
         </div>
       </div>
+
+      <section className="admin-welcome-grid">
+        <article className="admin-welcome-card">
+          <span className="admin-welcome-badge">
+            <Sparkles size={16} />
+            Operations workspace
+          </span>
+          <h2>Welcome to Busi-Tech</h2>
+          <p>
+            Run your daily sales, managers, agents, products, and payment follow-up
+            from one admin surface. Use the shortcuts below to move directly into
+            the actions that keep your system active.
+          </p>
+
+          <div className="admin-welcome-actions">
+            <Link to="/dashboard/payments" className="admin-primary-action">
+              Confirm payments
+            </Link>
+            <Link to="/dashboard/analytics" className="admin-secondary-action">
+              View reports
+            </Link>
+          </div>
+
+          <div className="admin-welcome-meta">
+            <div>
+              <strong>{stats.pendingPayments}</strong>
+              <span>payments waiting</span>
+            </div>
+            <div>
+              <strong>{stats.totalAgents}</strong>
+              <span>active agent seats</span>
+            </div>
+            <div>
+              <strong>{formatMoney(stats.totalRevenue)}</strong>
+              <span>confirmed revenue</span>
+            </div>
+          </div>
+        </article>
+
+        <article className="admin-quick-actions-card">
+          <div className="admin-card-heading">
+            <div>
+              <h2>Quick actions</h2>
+              <p>Shortcuts that correlate with your current admin flow</p>
+            </div>
+          </div>
+
+          <div className="admin-quick-action-list">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+
+              return (
+                <Link key={action.label} to={action.link} className="admin-quick-action-item">
+                  <span className="admin-quick-action-icon">
+                    <Icon size={18} />
+                  </span>
+                  <span className="admin-quick-action-copy">
+                    <strong>{action.label}</strong>
+                    <small>{action.description}</small>
+                  </span>
+                  <ArrowRight size={16} />
+                </Link>
+              );
+            })}
+          </div>
+        </article>
+      </section>
 
       <div className="admin-overview-hero">
         <div className="admin-kpi-grid">
@@ -339,6 +463,38 @@ const AdminOverview = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+        </section>
+
+        <section className="recent-section admin-table-card admin-activity-feed-card">
+          <div className="section-header">
+            <div>
+              <h2>Recent activity</h2>
+              <p>Operational events pulled from sales and manager records</p>
+            </div>
+            <Link to="/dashboard/messages" className="view-all-link">
+              Open messages
+            </Link>
+          </div>
+
+          {recentActivity.length === 0 ? (
+            <p>No recent activity yet</p>
+          ) : (
+            <div className="admin-activity-feed">
+              {recentActivity.map((item) => (
+                <article key={item.id} className="admin-activity-feed-item">
+                  <span className={`admin-activity-feed-dot ${item.tone}`} />
+                  <div className="admin-activity-feed-copy">
+                    <strong>{item.title}</strong>
+                    <span>{item.detail}</span>
+                    <small>{item.meta}</small>
+                  </div>
+                  <span className={`admin-activity-feed-status ${item.tone}`}>
+                    {item.status}
+                  </span>
+                </article>
+              ))}
             </div>
           )}
         </section>

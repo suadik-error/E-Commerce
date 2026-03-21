@@ -7,6 +7,7 @@ import { redis } from "../lib/redis.js"
 const DEFAULT_SESSION_TIMEOUT_MINUTES = 15;
 const MIN_SESSION_TIMEOUT_MINUTES = 15;
 const MAX_SESSION_TIMEOUT_MINUTES = 60;
+const HEX_COLOR_PATTERN = /^#([0-9a-fA-F]{6})$/;
 
 const normalizeSessionTimeout = (value) => {
     const parsed = Number.parseInt(value, 10);
@@ -202,6 +203,11 @@ export const updateProfile = async (req, res) => {
 			email,
 			notifications,
 			theme,
+			companyName,
+			primaryColor,
+			accentColor,
+			sidebarPlacement,
+			navbarPlacement,
 			language,
 			timezone,
 			twoFactor,
@@ -209,7 +215,8 @@ export const updateProfile = async (req, res) => {
 		} = req.body;
 
 		const updates = {};
-		const uploadedProfilePicture = req.file?.path;
+		const uploadedProfilePicture = req.files?.profilePicture?.[0]?.path;
+		const uploadedCompanyLogo = req.files?.companyLogo?.[0]?.path;
 
 		if (typeof name === "string" && name.trim()) {
 			updates.name = name.trim();
@@ -237,6 +244,26 @@ export const updateProfile = async (req, res) => {
 			updates.theme = theme;
 		}
 
+		if (typeof companyName === "string" && companyName.trim()) {
+			updates.companyName = companyName.trim();
+		}
+
+		if (typeof primaryColor === "string" && HEX_COLOR_PATTERN.test(primaryColor.trim())) {
+			updates.primaryColor = primaryColor.trim();
+		}
+
+		if (typeof accentColor === "string" && HEX_COLOR_PATTERN.test(accentColor.trim())) {
+			updates.accentColor = accentColor.trim();
+		}
+
+		if (typeof sidebarPlacement === "string" && ["left", "right"].includes(sidebarPlacement)) {
+			updates.sidebarPlacement = sidebarPlacement;
+		}
+
+		if (typeof navbarPlacement === "string" && ["top", "bottom"].includes(navbarPlacement)) {
+			updates.navbarPlacement = navbarPlacement;
+		}
+
 		if (typeof language === "string" && language.trim()) {
 			updates.language = language.trim();
 		}
@@ -259,6 +286,10 @@ export const updateProfile = async (req, res) => {
 
 		if (uploadedProfilePicture) {
 			updates.profilePicture = uploadedProfilePicture;
+		}
+
+		if (uploadedCompanyLogo) {
+			updates.companyLogo = uploadedCompanyLogo;
 		}
 
 		const currentEmail = req.user.email;

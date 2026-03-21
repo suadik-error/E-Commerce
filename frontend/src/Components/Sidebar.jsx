@@ -13,6 +13,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { getWorkspaceBranding, getWorkspaceInitials } from "../lib/workspaceBranding";
 
 const primaryLinks = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -39,6 +40,8 @@ const Sidebar = ({
   onLogout = () => {},
 }) => {
   const userInitial = String(user?.name || "A").trim().charAt(0).toUpperCase();
+  const branding = getWorkspaceBranding(user);
+  const workspaceMark = getWorkspaceInitials(user);
 
   const renderNavLink = ({ to, label, icon: Icon, end = false }) => (
     <NavLink key={to} to={to} end={end} onClick={onClose}>
@@ -56,9 +59,15 @@ const Sidebar = ({
 
       <aside className={`sidebar admin-sidebar ${isOpen ? "is-open" : ""}`}>
         <div className="sidebar-logo admin-sidebar-brand">
-          <div className="admin-sidebar-logo-mark">BT</div>
+          <div className="admin-sidebar-logo-mark">
+            {branding.companyLogo ? (
+              <img src={branding.companyLogo} alt={branding.companyName} className="workspace-logo-image" />
+            ) : (
+              workspaceMark
+            )}
+          </div>
           <div>
-            <h2>Busi-Tech</h2>
+            <h2>{branding.companyName}</h2>
             <p>Control center</p>
           </div>
 

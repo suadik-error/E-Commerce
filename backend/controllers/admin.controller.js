@@ -4,7 +4,20 @@ import Product from "../model/product.model.js";
 
 export const createAdminRequest = async (req, res) => {
   try {
-    const { businessName, businessType, country, city, phone, reason } = req.body;
+    const {
+      businessName,
+      businessType,
+      country,
+      city,
+      phone,
+      reason,
+      preferredPrimaryColor,
+      preferredAccentColor,
+      preferredSidebarPlacement,
+      preferredNavbarPlacement,
+    } = req.body;
+
+    const companyLogo = req.files?.companyLogo?.[0]?.path || "";
 
     const request = await AdminForm.create({
       user: req.user._id,
@@ -14,11 +27,33 @@ export const createAdminRequest = async (req, res) => {
       city,
       phone,
       reason,
+      preferredPrimaryColor,
+      preferredAccentColor,
+      preferredSidebarPlacement,
+      preferredNavbarPlacement,
       documents: {
         businessDoc: req.files.businessDoc[0].path,
         ownerId: req.files.ownerId[0].path,
         financeDoc: req.files.financeDoc[0].path,
+        companyLogo,
       },
+    });
+
+    await User.findByIdAndUpdate(req.user._id, {
+      companyName: businessName?.trim?.() || req.user.name,
+      ...(companyLogo ? { companyLogo } : {}),
+      ...(typeof preferredPrimaryColor === "string" && preferredPrimaryColor.trim()
+        ? { primaryColor: preferredPrimaryColor.trim() }
+        : {}),
+      ...(typeof preferredAccentColor === "string" && preferredAccentColor.trim()
+        ? { accentColor: preferredAccentColor.trim() }
+        : {}),
+      ...(preferredSidebarPlacement === "left" || preferredSidebarPlacement === "right"
+        ? { sidebarPlacement: preferredSidebarPlacement }
+        : {}),
+      ...(preferredNavbarPlacement === "top" || preferredNavbarPlacement === "bottom"
+        ? { navbarPlacement: preferredNavbarPlacement }
+        : {}),
     });
 
     res.status(201).json({

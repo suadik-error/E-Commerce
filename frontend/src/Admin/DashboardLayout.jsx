@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Bell, Menu, X } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
+import { applyWorkspaceAppearance, getWorkspaceBranding } from "../lib/workspaceBranding";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
@@ -40,8 +41,7 @@ const DashboardLayout = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "light");
-    localStorage.setItem("theme", "light");
+    fetchAdminShellData();
   }, []);
 
   const fetchAdminShellData = async () => {
@@ -58,6 +58,7 @@ const DashboardLayout = () => {
       if (profileRes.ok) {
         const profile = await profileRes.json();
         setUser(profile);
+        applyWorkspaceAppearance(profile);
       }
 
       if (notificationsRes.ok) {
@@ -68,10 +69,6 @@ const DashboardLayout = () => {
       console.error("Failed to load admin shell data");
     }
   };
-
-  useEffect(() => {
-    fetchAdminShellData();
-  }, []);
 
   useEffect(() => {
     setSearchTerm("");
@@ -122,8 +119,12 @@ const DashboardLayout = () => {
     }
   };
 
+  const branding = getWorkspaceBranding(user);
+
   return (
-    <div className="dashboard-layout admin-dashboard-layout">
+    <div
+      className={`dashboard-layout admin-dashboard-layout sidebar-${branding.sidebarPlacement}`}
+    >
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -135,7 +136,7 @@ const DashboardLayout = () => {
         onLogout={handleLogout}
       />
 
-      <div className="admin-dashboard-main">
+      <div className={`admin-dashboard-main navbar-${branding.navbarPlacement}`}>
         <header className="admin-topbar admin-topbar-minimal">
           <div className="admin-topbar-left">
             <button
@@ -148,7 +149,7 @@ const DashboardLayout = () => {
             </button>
             <div className="admin-topbar-title">
               <strong>{getAdminPageTitle(location.pathname)}</strong>
-              <span>Admin workspace</span>
+              <span>{branding.companyName} workspace</span>
             </div>
           </div>
           <div className="admin-topbar-right">

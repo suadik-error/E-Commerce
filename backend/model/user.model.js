@@ -43,6 +43,36 @@ const userSchema = new mongoose.Schema({
         enum: ["light", "dark", "auto"],
         default: "light",
     },
+    companyName: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+    companyLogo: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+    primaryColor: {
+        type: String,
+        default: "#12b76a",
+        trim: true,
+    },
+    accentColor: {
+        type: String,
+        default: "#3154ff",
+        trim: true,
+    },
+    sidebarPlacement: {
+        type: String,
+        enum: ["left", "right"],
+        default: "left",
+    },
+    navbarPlacement: {
+        type: String,
+        enum: ["top", "bottom"],
+        default: "top",
+    },
     language: {
         type: String,
         default: "en",

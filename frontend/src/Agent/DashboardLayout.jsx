@@ -9,6 +9,11 @@ import {
   User,
   X,
 } from "lucide-react";
+import {
+  applyWorkspaceAppearance,
+  getWorkspaceBranding,
+  getWorkspaceInitials,
+} from "../lib/workspaceBranding";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
@@ -41,6 +46,7 @@ const AgentDashboardLayout = () => {
       const data = await res.json();
       if (res.ok) {
         setUser(data);
+        applyWorkspaceAppearance(data);
       }
     } catch (err) {
       console.error("Failed to fetch user");
@@ -58,18 +64,31 @@ const AgentDashboardLayout = () => {
     }
   };
 
+  const branding = getWorkspaceBranding(user);
+  const workspaceMark = getWorkspaceInitials(user);
+
   return (
-    <div className="dashboard-layout agent-dashboard">
+    <div className={`dashboard-layout agent-dashboard sidebar-${branding.sidebarPlacement}`}>
       <div
         className={`mobile-sidebar-backdrop ${isSidebarOpen ? "is-visible" : ""}`}
         onClick={() => setIsSidebarOpen(false)}
       />
 
       <aside className={`sidebar mobile-dashboard-sidebar ${isSidebarOpen ? "is-open" : ""}`}>
-        <div className="sidebar-logo">
-          <h2>
-            Agent<span>Panel</span>
-          </h2>
+        <div className="sidebar-logo workspace-sidebar-logo">
+          <div className="workspace-sidebar-brand">
+            <div className="workspace-sidebar-mark">
+              {branding.companyLogo ? (
+                <img src={branding.companyLogo} alt={branding.companyName} className="workspace-logo-image" />
+              ) : (
+                workspaceMark
+              )}
+            </div>
+            <div>
+              <h2>{branding.companyName}</h2>
+              <p>Agent workspace</p>
+            </div>
+          </div>
           <button
             type="button"
             className="mobile-sidebar-close"
@@ -110,7 +129,7 @@ const AgentDashboardLayout = () => {
         </div>
       </aside>
 
-      <main className="dashboard-content">
+      <main className={`dashboard-content navbar-${branding.navbarPlacement}`}>
         <header className="dashboard-header mobile-dashboard-header">
           <div className="header-left">
             <button

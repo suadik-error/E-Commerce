@@ -14,11 +14,24 @@ const adminFormSchema = new mongoose.Schema(
     city: String,
     phone: String,
     reason: String,
+    preferredPrimaryColor: String,
+    preferredAccentColor: String,
+    preferredSidebarPlacement: {
+      type: String,
+      enum: ["left", "right"],
+      default: "left",
+    },
+    preferredNavbarPlacement: {
+      type: String,
+      enum: ["top", "bottom"],
+      default: "top",
+    },
 
     documents: {
       businessDoc: String,
       ownerId: String,
       financeDoc: String,
+      companyLogo: String,
     },
 
     status: {
