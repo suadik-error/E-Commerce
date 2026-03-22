@@ -673,8 +673,8 @@
   box-shadow: 0 0 0 4px rgba(70, 95, 255, 0.12), 0 16px 30px rgba(70, 95, 255, 0.14);
 }
 
-:root[data-theme="dark"],
-:root[data-theme="auto"] {
+:root[data-theme="dark"] .admin-dashboard-content,
+:root[data-theme="auto"] .admin-dashboard-content {
   background: linear-gradient(180deg, #121c2a 0%, #0f1723 100%);
   border-color: #223043;
   color: #98a2b3;
