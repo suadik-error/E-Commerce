@@ -673,6 +673,14 @@
   box-shadow: 0 0 0 4px rgba(70, 95, 255, 0.12), 0 16px 30px rgba(70, 95, 255, 0.14);
 }
 
+:root[data-theme="dark"],
+:root[data-theme="auto"] {
+  background: linear-gradient(180deg, #121c2a 0%, #0f1723 100%);
+  border-color: #223043;
+  color: #98a2b3;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
 :root[data-theme="dark"] .admin-sidebar-input-shell,
 :root[data-theme="auto"] .admin-sidebar-input-shell {
   background: linear-gradient(180deg, #121c2a 0%, #0f1723 100%);
