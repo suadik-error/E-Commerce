@@ -37,7 +37,6 @@ const DashboardLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   useEffect(() => {
@@ -71,7 +70,6 @@ const DashboardLayout = () => {
   };
 
   useEffect(() => {
-    setSearchTerm("");
     setIsSidebarOpen(false);
     setIsNotificationsOpen(false);
   }, [location.pathname]);
@@ -84,15 +82,6 @@ const DashboardLayout = () => {
   }, [isSidebarOpen]);
 
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;
-
-  const filteredSearchItems = useMemo(() => {
-    const normalizedQuery = searchTerm.trim().toLowerCase();
-    if (!normalizedQuery) return adminSearchItems;
-
-    return adminSearchItems.filter((item) =>
-      item.label.toLowerCase().includes(normalizedQuery)
-    );
-  }, [searchTerm]);
 
   const handleMarkAsRead = async (notificationId) => {
     try {
@@ -119,30 +108,27 @@ const DashboardLayout = () => {
     }
   };
 
+  const toggleSidebar = () => setIsSidebarOpen((value) => !value);
   const branding = getWorkspaceBranding(user);
 
   return (
-    <div
-      className={`dashboard-layout admin-dashboard-layout sidebar-${branding.sidebarPlacement}`}
-    >
+    <div className="dashboard-layout admin-dashboard-layout">
       <Sidebar
+        role="admin"
+        basePath="/dashboard"
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         user={user}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchItems={filteredSearchItems}
-        onSearchSelect={(path) => navigate(path)}
         onLogout={handleLogout}
       />
 
       <div className="admin-dashboard-main">
-        <header className="admin-topbar admin-topbar-minimal">
+        <header className="admin-topbar">
           <div className="admin-topbar-left">
             <button
               type="button"
               className="admin-icon-btn admin-menu-btn"
-              onClick={() => setIsSidebarOpen((value) => !value)}
+              onClick={toggleSidebar}
               aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
             >
               {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}

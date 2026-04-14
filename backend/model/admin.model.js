@@ -14,6 +14,10 @@ const adminFormSchema = new mongoose.Schema(
     city: String,
     phone: String,
     reason: String,
+    companyDescription: String,
+    companyLocation: String,
+    companyWorkingDays: String,
+    companyWorkingHours: String,
     preferredPrimaryColor: String,
     preferredAccentColor: String,
     preferredSidebarPlacement: {

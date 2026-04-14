@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Bell, ChevronRight, Home, ShieldCheck, User } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+const CLIENT_APP_URL = import.meta.env.VITE_CLIENT_APP_URL || "";
 
 const getDashboardPathByRole = (role) => {
   const normalizedRole = String(role || "").trim().toLowerCase();
@@ -31,41 +32,39 @@ const Navbar = () => {
   });
   const [notifications] = useState(3);
 
-  const checkAuth = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-        credentials: "include",
-      });
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+          credentials: "include",
+        });
 
-      if (!res.ok) {
+        if (!res.ok) {
+          return { isAuthenticated: false, role: null };
+        }
+
+        const profile = await res.json();
+        const role = profile?.role ?? profile?.user?.role ?? null;
+        const normalizedRole = String(role || "").trim().toLowerCase();
+
+        return {
+          isAuthenticated: ["admin", "manager", "agent"].includes(normalizedRole),
+          role,
+        };
+      } catch {
         return { isAuthenticated: false, role: null };
       }
+    };
 
-      const profile = await res.json();
-      return {
-        isAuthenticated: true,
-        role: profile?.role ?? profile?.user?.role ?? null,
-      };
-    } catch {
-      return { isAuthenticated: false, role: null };
-    }
-  };
-
-  useEffect(() => {
-    const fetchAuth = async () => {
+    const syncAuth = async () => {
       const nextAuth = await checkAuth();
       setAuthState({ checked: true, ...nextAuth });
     };
 
-    fetchAuth();
+    syncAuth();
+    window.addEventListener("authChanged", syncAuth);
 
-    const handleAuthChange = async () => {
-      const nextAuth = await checkAuth();
-      setAuthState({ checked: true, ...nextAuth });
-    };
-
-    window.addEventListener("authChanged", handleAuthChange);
-    return () => window.removeEventListener("authChanged", handleAuthChange);
+    return () => window.removeEventListener("authChanged", syncAuth);
   }, []);
 
   const { checked, isAuthenticated, role } = authState;
@@ -84,7 +83,7 @@ const Navbar = () => {
           <span className="brand-badge">BT</span>
           <div className="brand-copy">
             <strong>Busi-Tech</strong>
-            <small>Commerce operations platform</small>
+            <small>Staff workspace</small>
           </div>
         </NavLink>
       </div>
@@ -97,6 +96,12 @@ const Navbar = () => {
           </NavLink>
         )}
 
+        {!isAuthenticated && CLIENT_APP_URL ? (
+          <a href={CLIENT_APP_URL} className="nav-pill">
+            <span>Client App</span>
+          </a>
+        ) : null}
+
         {isAuthenticated && (
           <>
             <NavLink to={getDashboardPathByRole(role)} className="nav-pill">
@@ -105,9 +110,9 @@ const Navbar = () => {
             </NavLink>
             <button className="notification-btn" type="button" aria-label="Notifications">
               <Bell size={18} />
-              {notifications > 0 && (
+              {notifications > 0 ? (
                 <span className="notification-badge">{notifications}</span>
-              )}
+              ) : null}
             </button>
             <NavLink to={getProfilePathByRole(role)} className="nav-pill">
               <User size={18} />
@@ -118,13 +123,13 @@ const Navbar = () => {
 
         {!isAuthenticated &&
           (location.pathname === "/login" ? (
-            <NavLink to="/signup" className="login-btn">
-              Signup
+            <NavLink to="/admin-request" className="login-btn">
+              Request Access
               <ChevronRight size={16} />
             </NavLink>
           ) : (
             <NavLink to="/login" className="login-btn">
-              Login
+              Staff Login
               <ChevronRight size={16} />
             </NavLink>
           ))}

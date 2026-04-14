@@ -22,6 +22,24 @@ const salesSchema = new mongoose.Schema({
         index: true,
         required: true
     },
+    storefrontCompany: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        index: true,
+        default: null,
+    },
+    customerUser: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        index: true,
+        default: null,
+    },
+    checkoutReference: {
+        type: String,
+        default: "",
+        trim: true,
+        index: true,
+    },
     quantity: {
         type: Number,
         default: 1,
@@ -49,6 +67,11 @@ const salesSchema = new mongoose.Schema({
         type: String,
         enum: ["pending", "paid", "confirmed", "cancelled"],
         default: "pending"
+    },
+    salesChannel: {
+        type: String,
+        enum: ["internal", "storefront"],
+        default: "internal",
     },
     productStatus: {
         type: String,

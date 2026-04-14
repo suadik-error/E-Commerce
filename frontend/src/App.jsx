@@ -48,9 +48,6 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin-request" element={<AdminForm />} />
           <Route path="/welcome" element={<Home />} />
-          <Route path="/products" element={<div>Products Page</div>} />
-          <Route path="/orders" element={<div>Orders Page</div>} />
-          <Route path="/cart" element={<div>Cart Page</div>} />
 
           <Route
             path="/dashboard"

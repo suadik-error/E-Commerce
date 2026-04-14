@@ -24,9 +24,19 @@ const Settings = () => {
     notifications: true,
     theme: "light",
     companyName: "",
+    companyDescription: "",
+    companyLocation: "",
+    companyWorkingDays: "",
+    companyWorkingHours: "",
+    companySlug: "",
     companyLogo: "",
     primaryColor: "#12b76a",
     accentColor: "#3154ff",
+    storefrontHeadline: "",
+    storefrontSubheadline: "",
+    storefrontAnnouncement: "",
+    storefrontLayout: "editorial",
+    storefrontCardStyle: "soft",
     sidebarPlacement: "left",
     sessionTimeout: MIN_SESSION_TIMEOUT,
   });
@@ -80,8 +90,18 @@ const Settings = () => {
       payload.append("notifications", String(profile.notifications));
       payload.append("theme", profile.theme || "light");
       payload.append("companyName", profile.companyName || "");
+      payload.append("companyDescription", profile.companyDescription || "");
+      payload.append("companyLocation", profile.companyLocation || "");
+      payload.append("companyWorkingDays", profile.companyWorkingDays || "");
+      payload.append("companyWorkingHours", profile.companyWorkingHours || "");
+      payload.append("companySlug", profile.companySlug || "");
       payload.append("primaryColor", profile.primaryColor || "#12b76a");
       payload.append("accentColor", profile.accentColor || "#3154ff");
+      payload.append("storefrontHeadline", profile.storefrontHeadline || "");
+      payload.append("storefrontSubheadline", profile.storefrontSubheadline || "");
+      payload.append("storefrontAnnouncement", profile.storefrontAnnouncement || "");
+      payload.append("storefrontLayout", profile.storefrontLayout || "editorial");
+      payload.append("storefrontCardStyle", profile.storefrontCardStyle || "soft");
       payload.append("sidebarPlacement", profile.sidebarPlacement || "left");
       if (profile.language) payload.append("language", profile.language);
       if (profile.timezone) payload.append("timezone", profile.timezone);
@@ -341,6 +361,129 @@ const Settings = () => {
                   </div>
 
                   <div className="form-group">
+                    <label htmlFor="companyLocation">
+                      <User size={16} />
+                      Company Location
+                    </label>
+                    <input
+                      type="text"
+                      id="companyLocation"
+                      name="companyLocation"
+                      value={profile.companyLocation || ""}
+                      onChange={handleChange}
+                      placeholder="123 Main St, City, Country"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="companySlug">
+                      <LayoutTemplate size={16} />
+                      Storefront Slug
+                    </label>
+                    <input
+                      type="text"
+                      id="companySlug"
+                      name="companySlug"
+                      value={profile.companySlug || ""}
+                      onChange={handleChange}
+                      placeholder="stellar-labs"
+                    />
+                    <p className="field-description">
+                      Used for clean storefront identity and vendor discovery.
+                    </p>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="companyWorkingDays">
+                      <LayoutTemplate size={16} />
+                      Working Days
+                    </label>
+                    <input
+                      type="text"
+                      id="companyWorkingDays"
+                      name="companyWorkingDays"
+                      value={profile.companyWorkingDays || ""}
+                      onChange={handleChange}
+                      placeholder="Monday - Friday"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="companyWorkingHours">
+                      <LayoutTemplate size={16} />
+                      Working Hours
+                    </label>
+                    <input
+                      type="text"
+                      id="companyWorkingHours"
+                      name="companyWorkingHours"
+                      value={profile.companyWorkingHours || ""}
+                      onChange={handleChange}
+                      placeholder="9:00 AM - 5:00 PM"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="companyDescription">
+                      <User size={16} />
+                      Company Description
+                    </label>
+                    <textarea
+                      id="companyDescription"
+                      name="companyDescription"
+                      value={profile.companyDescription || ""}
+                      onChange={handleChange}
+                      placeholder="Describe your company site, services, or mission"
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="storefrontHeadline">
+                      <LayoutTemplate size={16} />
+                      Storefront Headline
+                    </label>
+                    <input
+                      type="text"
+                      id="storefrontHeadline"
+                      name="storefrontHeadline"
+                      value={profile.storefrontHeadline || ""}
+                      onChange={handleChange}
+                      placeholder="Design-led commerce for modern teams"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="storefrontSubheadline">
+                      <LayoutTemplate size={16} />
+                      Storefront Subheadline
+                    </label>
+                    <textarea
+                      id="storefrontSubheadline"
+                      name="storefrontSubheadline"
+                      value={profile.storefrontSubheadline || ""}
+                      onChange={handleChange}
+                      placeholder="A concise line that explains the value of your storefront."
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="storefrontAnnouncement">
+                      <Palette size={16} />
+                      Announcement Banner
+                    </label>
+                    <input
+                      type="text"
+                      id="storefrontAnnouncement"
+                      name="storefrontAnnouncement"
+                      value={profile.storefrontAnnouncement || ""}
+                      onChange={handleChange}
+                      placeholder="Free shipping this week on featured collections"
+                    />
+                  </div>
+
+                  <div className="form-group">
                     <label htmlFor="companyLogo">
                       <Camera size={16} />
                       Company Logo
@@ -383,6 +526,40 @@ const Settings = () => {
                       value={profile.accentColor || "#3154ff"}
                       onChange={handleChange}
                     />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="storefrontLayout">
+                      <LayoutTemplate size={16} />
+                      Storefront Layout
+                    </label>
+                    <select
+                      id="storefrontLayout"
+                      name="storefrontLayout"
+                      value={profile.storefrontLayout || "editorial"}
+                      onChange={handleChange}
+                    >
+                      <option value="editorial">Editorial</option>
+                      <option value="grid">Grid</option>
+                      <option value="immersive">Immersive</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="storefrontCardStyle">
+                      <Palette size={16} />
+                      Product Card Style
+                    </label>
+                    <select
+                      id="storefrontCardStyle"
+                      name="storefrontCardStyle"
+                      value={profile.storefrontCardStyle || "soft"}
+                      onChange={handleChange}
+                    >
+                      <option value="soft">Soft</option>
+                      <option value="glass">Glass</option>
+                      <option value="outline">Outline</option>
+                    </select>
                   </div>
                 </div>
               </div>

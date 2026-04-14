@@ -1,6 +1,7 @@
 import User from "../model/user.model.js";
 import Manager from "../model/manager.model.js";
 import Agent from "../model/agent.model.js";
+import Product from "../model/product.model.js";
 import jwt from "jsonwebtoken";
 import { redis } from "../lib/redis.js"
 
@@ -8,6 +9,40 @@ const DEFAULT_SESSION_TIMEOUT_MINUTES = 15;
 const MIN_SESSION_TIMEOUT_MINUTES = 15;
 const MAX_SESSION_TIMEOUT_MINUTES = 60;
 const HEX_COLOR_PATTERN = /^#([0-9a-fA-F]{6})$/;
+const STOREFRONT_LAYOUTS = ["editorial", "grid", "immersive"];
+const STOREFRONT_CARD_STYLES = ["soft", "glass", "outline"];
+
+const normalizeSlug = (value) =>
+    String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 60);
+
+const buildCompanyPayload = (companyOwner, stats = {}) => ({
+    _id: companyOwner._id,
+    companyName: companyOwner.companyName || companyOwner.name || "Company",
+    companySlug: companyOwner.companySlug || normalizeSlug(companyOwner.companyName || companyOwner.name),
+    companyDescription: companyOwner.companyDescription || "",
+    companyLocation: companyOwner.companyLocation || "",
+    companyWorkingDays: companyOwner.companyWorkingDays || "",
+    companyWorkingHours: companyOwner.companyWorkingHours || "",
+    companyLogo: companyOwner.companyLogo || "",
+    primaryColor: companyOwner.primaryColor || "#12b76a",
+    accentColor: companyOwner.accentColor || "#3154ff",
+    storefrontHeadline:
+        companyOwner.storefrontHeadline || `Shop ${companyOwner.companyName || companyOwner.name || "this company"}`,
+    storefrontSubheadline:
+        companyOwner.storefrontSubheadline || "A responsive storefront generated from your central inventory.",
+    storefrontAnnouncement: companyOwner.storefrontAnnouncement || "",
+    storefrontLayout: companyOwner.storefrontLayout || "editorial",
+    storefrontCardStyle: companyOwner.storefrontCardStyle || "soft",
+    productCount: Number(stats.productCount || 0),
+    availableProductCount: Number(stats.availableProductCount || 0),
+    hasAvailableProducts: Number(stats.availableProductCount || 0) > 0,
+    featuredCount: Number(stats.featuredCount || 0),
+});
 
 const normalizeSessionTimeout = (value) => {
     const parsed = Number.parseInt(value, 10);
@@ -70,7 +105,10 @@ export const signup = async (req, res) => {
 		const userExists = await User.findOne({ email });
 
 		if (userExists) {
-			return res.status(400).json({ message: "User already exists" });
+			return res.status(400).json({
+                message: "User already exists",
+                existingRole: userExists.role,
+            });
 		}
 		const user = await User.create({ name, email, password });
 
@@ -196,6 +234,92 @@ export const getProfile = async (req, res) => {
 	}
 };
 
+export const getPublicCompanyProfile = async (req, res) => {
+	try {
+		const companyId = String(req.query.companyId || "").trim();
+		const companySlug = normalizeSlug(req.query.companySlug);
+		const companyOwner = await User.findOne({
+			role: "admin",
+			...(companyId ? { _id: companyId } : {}),
+			...(companySlug ? { companySlug } : {}),
+		})
+			.sort(companyId ? undefined : { createdAt: 1 })
+			.select(
+				"name companyName companySlug companyDescription companyLocation companyWorkingDays companyWorkingHours companyLogo primaryColor accentColor storefrontHeadline storefrontSubheadline storefrontAnnouncement storefrontLayout storefrontCardStyle"
+			)
+			.lean();
+
+		if (!companyOwner) {
+			return res.status(404).json({ message: "Company profile not found" });
+		}
+
+        const [productStats] = await Product.aggregate([
+            { $match: { ownerAdmin: companyOwner._id } },
+            {
+                $group: {
+                    _id: "$ownerAdmin",
+                    productCount: { $sum: 1 },
+                    availableProductCount: {
+                        $sum: {
+                            $cond: [{ $gt: ["$quantity", 0] }, 1, 0],
+                        },
+                    },
+                    featuredCount: {
+                        $sum: {
+                            $cond: [{ $eq: ["$isFeatured", true] }, 1, 0],
+                        },
+                    },
+                },
+            },
+        ]);
+
+		res.json(buildCompanyPayload(companyOwner, productStats || {}));
+	} catch (error) {
+		res.status(500).json({ message: "Failed to fetch company profile" });
+	}
+};
+
+export const getPublicCompanies = async (req, res) => {
+	try {
+		const companies = await User.find({ role: "admin" })
+			.sort({ createdAt: 1 })
+			.select(
+				"_id name companyName companySlug companyDescription companyLocation companyWorkingDays companyWorkingHours companyLogo primaryColor accentColor storefrontHeadline storefrontSubheadline storefrontAnnouncement storefrontLayout storefrontCardStyle"
+			)
+			.lean();
+
+        const companyIds = companies.map((company) => company._id);
+        const productStats = await Product.aggregate([
+            { $match: { ownerAdmin: { $in: companyIds } } },
+            {
+                $group: {
+                    _id: "$ownerAdmin",
+                    productCount: { $sum: 1 },
+                    availableProductCount: {
+                        $sum: {
+                            $cond: [{ $gt: ["$quantity", 0] }, 1, 0],
+                        },
+                    },
+                    featuredCount: {
+                        $sum: {
+                            $cond: [{ $eq: ["$isFeatured", true] }, 1, 0],
+                        },
+                    },
+                },
+            },
+        ]);
+        const statsMap = new Map(productStats.map((entry) => [String(entry._id), entry]));
+
+		res.json({
+			companies: companies.map((company) =>
+                buildCompanyPayload(company, statsMap.get(String(company._id)) || {})
+            ),
+		});
+	} catch (error) {
+		res.status(500).json({ message: "Failed to fetch companies" });
+	}
+};
+
 export const updateProfile = async (req, res) => {
 	try {
 		const {
@@ -204,8 +328,18 @@ export const updateProfile = async (req, res) => {
 			notifications,
 			theme,
 			companyName,
+			companySlug,
+			companyDescription,
+			companyLocation,
+			companyWorkingDays,
+			companyWorkingHours,
 			primaryColor,
 			accentColor,
+			storefrontHeadline,
+			storefrontSubheadline,
+			storefrontAnnouncement,
+			storefrontLayout,
+			storefrontCardStyle,
 			sidebarPlacement,
 			language,
 			timezone,
@@ -247,6 +381,37 @@ export const updateProfile = async (req, res) => {
 			updates.companyName = companyName.trim();
 		}
 
+        if (typeof companySlug === "string") {
+            const normalizedSlug = normalizeSlug(companySlug || companyName || req.user.companyName || req.user.name);
+            if (normalizedSlug) {
+                const existingSlugOwner = await User.findOne({
+                    role: "admin",
+                    companySlug: normalizedSlug,
+                    _id: { $ne: req.user._id },
+                }).select("_id");
+                if (existingSlugOwner) {
+                    return res.status(400).json({ message: "Company slug is already in use" });
+                }
+                updates.companySlug = normalizedSlug;
+            }
+        }
+
+		if (typeof companyDescription === "string") {
+			updates.companyDescription = companyDescription.trim();
+		}
+
+		if (typeof companyLocation === "string") {
+			updates.companyLocation = companyLocation.trim();
+		}
+
+		if (typeof companyWorkingDays === "string") {
+			updates.companyWorkingDays = companyWorkingDays.trim();
+		}
+
+		if (typeof companyWorkingHours === "string") {
+			updates.companyWorkingHours = companyWorkingHours.trim();
+		}
+
 		if (typeof primaryColor === "string" && HEX_COLOR_PATTERN.test(primaryColor.trim())) {
 			updates.primaryColor = primaryColor.trim();
 		}
@@ -254,6 +419,26 @@ export const updateProfile = async (req, res) => {
 		if (typeof accentColor === "string" && HEX_COLOR_PATTERN.test(accentColor.trim())) {
 			updates.accentColor = accentColor.trim();
 		}
+
+        if (typeof storefrontHeadline === "string") {
+            updates.storefrontHeadline = storefrontHeadline.trim();
+        }
+
+        if (typeof storefrontSubheadline === "string") {
+            updates.storefrontSubheadline = storefrontSubheadline.trim();
+        }
+
+        if (typeof storefrontAnnouncement === "string") {
+            updates.storefrontAnnouncement = storefrontAnnouncement.trim();
+        }
+
+        if (typeof storefrontLayout === "string" && STOREFRONT_LAYOUTS.includes(storefrontLayout.trim())) {
+            updates.storefrontLayout = storefrontLayout.trim();
+        }
+
+        if (typeof storefrontCardStyle === "string" && STOREFRONT_CARD_STYLES.includes(storefrontCardStyle.trim())) {
+            updates.storefrontCardStyle = storefrontCardStyle.trim();
+        }
 
 		if (typeof sidebarPlacement === "string" && ["left", "right"].includes(sidebarPlacement)) {
 			updates.sidebarPlacement = sidebarPlacement;

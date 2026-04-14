@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
+const CLIENT_APP_URL = import.meta.env.VITE_CLIENT_APP_URL || "";
+
 const roleCards = [
   {
     title: "Admins",
@@ -19,9 +21,9 @@ const roleCards = [
 ];
 
 const workflowSteps = [
-  "Create a secure workspace where your business can manage staff, products, and operations in a structured way.",
-  "Assign the right dashboards to admins, managers, and agents so each person sees only the tools and information relevant to their role.",
-  "Track products, sales, payment confirmations, notifications, and team activity inside one connected system instead of separate spreadsheets and chats.",
+  "Use the separate client app for default user accounts and customer-facing browsing.",
+  "Keep the admin site focused on internal roles like admin, manager, and agent.",
+  "Move approved staff into the secured workspace without mixing their experience with the client portal.",
 ];
 
 const Home = () => {
@@ -32,19 +34,25 @@ const Home = () => {
       <section className="home-hero">
         <div className="home-hero-grid">
           <div className="home-hero-copy">
-            <span className="home-badge">Busi-Tech</span>
-            <h1>One business platform for managing products, sales, people, and daily operations.</h1>
+            <span className="home-badge">Staff Portal</span>
+            <h1>One internal workspace for admins, managers, and agents.</h1>
             <p>
-              Busi-Tech brings your operational workflow into one place.
-              Instead of managing products in one tool, tracking payments in another,
-              and coordinating staff manually, you get a connected workspace built
-              for admins, managers, and agents working as one team.
+              This frontend is the staff-facing side of Busi-Tech. Default users now belong in the
+              separate client app, while this portal stays focused on internal operations.
             </p>
 
             <div className="home-actions">
               <button className="home-primary-btn" onClick={() => navigate("/login")}>
-                Login to Workspace
+                Staff Login
               </button>
+              {CLIENT_APP_URL ? (
+                <button
+                  className="home-secondary-btn"
+                  onClick={() => window.location.assign(CLIENT_APP_URL)}
+                >
+                  Open Client App
+                </button>
+              ) : null}
               <button
                 className="home-secondary-btn"
                 onClick={() => navigate("/admin-request")}
@@ -55,38 +63,38 @@ const Home = () => {
 
             <div className="home-summary">
               <div>
-                <strong>Products</strong>
-                <span>Organize inventory, product activity, and sales flow from a single workspace.</span>
+                <strong>Separated Access</strong>
+                <span>Customer users and staff roles no longer share the same frontend entry point.</span>
               </div>
               <div>
-                <strong>Teams</strong>
-                <span>Give admins, managers, and agents the right access without splitting the system.</span>
+                <strong>Role Workspaces</strong>
+                <span>Admins, managers, and agents keep their own dashboards and protected routes.</span>
               </div>
               <div>
-                <strong>Mobile Ready</strong>
-                <span>Use the platform across desktop, tablet, and mobile when work needs to move fast.</span>
+                <strong>Cleaner Flow</strong>
+                <span>Client signup stays in the client app while admin requests stay here.</span>
               </div>
             </div>
           </div>
 
           <div className="home-hero-panel">
             <div className="hero-panel-header">
-              <span>Platform Snapshot</span>
-              <strong>Built for everyday operations</strong>
+              <span>Portal Split</span>
+              <strong>Internal app only</strong>
             </div>
 
             <div className="hero-panel-grid">
               <article className="hero-panel-card accent-blue">
-                <h3>Product Oversight</h3>
-                <p>See product-related activity in context so stock, updates, and sales actions stay aligned.</p>
+                <h3>Admin Control</h3>
+                <p>Manage staff, products, payments, and permissions from one secured workspace.</p>
               </article>
               <article className="hero-panel-card accent-gold">
-                <h3>Payment Visibility</h3>
-                <p>Review payment confirmations and sales records with clearer operational visibility.</p>
+                <h3>Client Isolation</h3>
+                <p>Default users authenticate in a separate app so role boundaries stay clear.</p>
               </article>
               <article className="hero-panel-card accent-green">
-                <h3>Team Coordination</h3>
-                <p>Keep handoffs between admin, manager, and agent organized instead of fragmented.</p>
+                <h3>Cleaner Routing</h3>
+                <p>Staff routes no longer compete with the customer-facing flow.</p>
               </article>
             </div>
           </div>
@@ -96,11 +104,10 @@ const Home = () => {
       <section className="home-section">
         <div className="home-section-header">
           <span className="home-section-label">Built Around Roles</span>
-          <h2>Each user sees the work that matters to them.</h2>
+          <h2>Each internal role sees the work that matters to them.</h2>
           <p>
-            The platform is structured around real business responsibilities, so
-            leadership can monitor performance while each team member stays focused
-            on their own tasks.
+            The staff portal is structured around real business responsibilities, while the client
+            app is kept separate for default users.
           </p>
         </div>
 
@@ -117,10 +124,10 @@ const Home = () => {
       <section className="home-section home-section-alt">
         <div className="home-section-header">
           <span className="home-section-label">How It Works</span>
-          <h2>A cleaner workflow from setup to daily execution.</h2>
+          <h2>Separate client access from internal operations.</h2>
           <p>
-            From onboarding your team to tracking sales outcomes, the system is
-            designed to reduce confusion and keep your operational flow visible.
+            This keeps user journeys simpler and avoids conflicts between public account flows and
+            internal business dashboards.
           </p>
         </div>
 
@@ -137,16 +144,21 @@ const Home = () => {
       <section className="home-cta">
         <div className="home-cta-card">
           <div>
-            <span className="home-section-label">Ready To Use It</span>
-            <h2>Start from the public homepage, then move directly into the workspace that fits your role.</h2>
+            <span className="home-section-label">Next Step</span>
+            <h2>Use the staff portal for approved roles and the client app for default user accounts.</h2>
           </div>
           <div className="home-actions">
-            <button className="home-primary-btn" onClick={() => navigate("/signup")}>
-              Create Account
-            </button>
             <button className="home-secondary-btn" onClick={() => navigate("/login")}>
-              Login
+              Staff Login
             </button>
+            {CLIENT_APP_URL ? (
+              <button
+                className="home-primary-btn"
+                onClick={() => window.location.assign(CLIENT_APP_URL)}
+              >
+                Client App
+              </button>
+            ) : null}
           </div>
         </div>
       </section>

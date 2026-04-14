@@ -3,6 +3,8 @@ import {
     createProduct,
     deleteProduct,
     getAllProducts,
+    getPublicProductById,
+    getPublicProducts,
     getFeaturedProducts,
     getProductsByCategory,
     getRecommendedProducts,
@@ -15,6 +17,8 @@ import { uploadProduct } from "../middleware/upload.middleware.js";
 
 const router = express.Router();
 
+router.get("/public", getPublicProducts);
+router.get("/public/:id", getPublicProductById);
 router.get("/", protectRoute, checkRole(["admin", "manager", "agent"]), getAllProducts);
 router.get("/featured", getFeaturedProducts);
 router.get("/category/:category", getProductsByCategory);

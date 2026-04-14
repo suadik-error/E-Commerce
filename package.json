@@ -5,8 +5,12 @@
   "type": "module",
   "main": "backend/server.js",
   "scripts": {
-    "dev": "cd backend && npm run dev",
-    "start": "cd backend && npm start"
+    "dev": "node backend/server.js",
+    "start": "cd backend && npm start",
+    "admin:dev": "cd frontend && npm run dev",
+    "admin:build": "cd frontend && npm run build",
+    "client:dev": "cd client && npm run dev",
+    "client:build": "cd client && npm run build"
   },
   "engines": {
     "node": "20"

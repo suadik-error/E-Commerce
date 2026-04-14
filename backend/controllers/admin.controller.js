@@ -11,6 +11,10 @@ export const createAdminRequest = async (req, res) => {
       city,
       phone,
       reason,
+      companyDescription,
+      companyLocation,
+      companyWorkingDays,
+      companyWorkingHours,
       preferredPrimaryColor,
       preferredAccentColor,
       preferredSidebarPlacement,
@@ -26,6 +30,10 @@ export const createAdminRequest = async (req, res) => {
       city,
       phone,
       reason,
+      companyDescription,
+      companyLocation,
+      companyWorkingDays,
+      companyWorkingHours,
       preferredPrimaryColor,
       preferredAccentColor,
       preferredSidebarPlacement,
@@ -40,6 +48,10 @@ export const createAdminRequest = async (req, res) => {
 
     await User.findByIdAndUpdate(req.user._id, {
       companyName: businessName?.trim?.() || req.user.name,
+      companyDescription: companyDescription?.trim?.() || "",
+      companyLocation: companyLocation?.trim?.() || "",
+      companyWorkingDays: companyWorkingDays?.trim?.() || "",
+      companyWorkingHours: companyWorkingHours?.trim?.() || "",
       ...(companyLogo ? { companyLogo } : {}),
       ...(typeof preferredPrimaryColor === "string" && preferredPrimaryColor.trim()
         ? { primaryColor: preferredPrimaryColor.trim() }

@@ -1,9 +1,8 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
-
-
+const CLIENT_APP_URL = import.meta.env.VITE_CLIENT_APP_URL || "";
 
 const getRedirectPathByRole = (role) => {
   const normalizedRole = String(role || "").trim().toLowerCase();
@@ -16,24 +15,22 @@ const getRedirectPathByRole = (role) => {
 
 const LoginPage = () => {
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
+  const handleChange = (event) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [event.target.name]: event.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     try {
       setLoading(true);
@@ -72,17 +69,34 @@ const LoginPage = () => {
           const profile = await profileRes.json();
           role = profile?.role ?? role;
         }
-      } catch (_) {
+      } catch {
       }
 
-      const redirectPath = getRedirectPathByRole(role);
+      const normalizedRole = String(role || "").trim().toLowerCase();
 
-      console.log("User role:", role);
+      if (normalizedRole === "user") {
+        window.dispatchEvent(new CustomEvent("auth:clear"));
+
+        try {
+          await fetch(`${API_BASE_URL}/api/auth/logout`, {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch {
+        }
+
+        if (CLIENT_APP_URL) {
+          window.location.assign(`${CLIENT_APP_URL.replace(/\/$/, "")}/login`);
+          return;
+        }
+
+        throw new Error("Default users should sign in through the client app.");
+      }
+
       window.dispatchEvent(new Event("authChanged"));
-      navigate(redirectPath);
-
-    } catch (err) {
-      setError(err.message);
+      navigate(getRedirectPathByRole(role));
+    } catch (requestError) {
+      setError(requestError.message);
     } finally {
       setLoading(false);
     }
@@ -92,28 +106,28 @@ const LoginPage = () => {
     <div className="login-container">
       <div className="auth-shell">
         <div className="auth-brand">
-          <span className="auth-kicker">Busi-Tech</span>
-          <h1>Run products, sales, and team workflows from one place.</h1>
+          <span className="auth-kicker">Staff Portal</span>
+          <h1>Admin, manager, and agent access lives here.</h1>
           <p>
-            Sign in to manage inventory, track orders, monitor payments, and
-            keep your sales operation moving across every device.
+            This login is for the internal workspace only. Default users should use the separate
+            client application instead of this staff portal.
           </p>
           <div className="auth-highlights">
-            <span>Inventory control</span>
-            <span>Sales visibility</span>
-            <span>Team management</span>
+            <span>Admin workflows</span>
+            <span>Manager tools</span>
+            <span>Agent dashboards</span>
           </div>
         </div>
 
         <div className="login-card auth-panel">
-          <h2>Welcome back</h2>
-          <p className="auth-subtitle">Log in to continue to your workspace.</p>
+          <h2>Staff login</h2>
+          <p className="auth-subtitle">Continue to the internal workspace.</p>
 
-          {error && <p className="error-text">{error}</p>}
+          {error ? <p className="error-text">{error}</p> : null}
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="input-group">
-              <span className="icon">📧</span>
+              <span className="icon">Email</span>
               <input
                 type="email"
                 name="email"
@@ -125,7 +139,7 @@ const LoginPage = () => {
             </div>
 
             <div className="input-group">
-              <span className="icon">🔒</span>
+              <span className="icon">Pass</span>
               <input
                 type="password"
                 name="password"
@@ -142,8 +156,7 @@ const LoginPage = () => {
           </form>
 
           <p className="signup-text">
-            Don't have an account?{" "}
-            <Link to="/signup">Signup here</Link>
+            Need admin access? <Link to="/admin-request">Submit a request</Link>
           </p>
         </div>
       </div>

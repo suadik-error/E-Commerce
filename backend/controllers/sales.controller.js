@@ -57,6 +57,9 @@ const getAgentUserId = async (agentDoc) => {
     return agentUser?._id || null;
 };
 
+const createCheckoutReference = () =>
+    `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+
 const buildActorLabel = async (user) => {
     if (!user) return "System";
     if (user.role === "agent") {
@@ -187,6 +190,125 @@ export const createSale = async (req, res) => {
     } catch (error) {
         console.error("Error creating sale:", error);
         res.status(500).json({ message: "Failed to create sale" });
+    }
+};
+
+export const createStorefrontOrder = async (req, res) => {
+    try {
+        if (req.user.role !== "user") {
+            return res.status(403).json({ message: "Only storefront users can place orders" });
+        }
+
+        const items = Array.isArray(req.body?.items) ? req.body.items : [];
+        const notes = String(req.body?.notes || "").trim();
+        const customerPhone = String(req.body?.customerPhone || "").trim();
+        const customerAddress = String(req.body?.customerAddress || "").trim();
+
+        if (items.length === 0) {
+            return res.status(400).json({ message: "Cart is empty" });
+        }
+
+        const normalizedItems = items.reduce((accumulator, item) => {
+            const productId = String(item?.productId || item?._id || "").trim();
+            const quantity = Number(item?.quantity);
+
+            if (!productId || Number.isNaN(quantity) || quantity < 1) {
+                return accumulator;
+            }
+
+            accumulator.set(productId, (accumulator.get(productId) || 0) + quantity);
+            return accumulator;
+        }, new Map());
+
+        if (normalizedItems.size === 0) {
+            return res.status(400).json({ message: "No valid cart items were provided" });
+        }
+
+        const productIds = Array.from(normalizedItems.keys());
+        const products = await Product.find({ _id: { $in: productIds } });
+        const productMap = new Map(products.map((product) => [String(product._id), product]));
+
+        for (const [productId, quantity] of normalizedItems.entries()) {
+            const product = productMap.get(productId);
+
+            if (!product) {
+                return res.status(404).json({ message: "One or more products are no longer available" });
+            }
+
+            if (product.quantity < quantity) {
+                return res.status(400).json({
+                    message: `Only ${product.quantity} item(s) available for ${product.name}`,
+                });
+            }
+        }
+
+        const checkoutReference = createCheckoutReference();
+        const createdOrders = [];
+
+        for (const [productId, quantity] of normalizedItems.entries()) {
+            const product = productMap.get(productId);
+            const totalPrice = Number(product.price) * quantity;
+
+            product.quantity -= quantity;
+            await product.save();
+
+            const sale = await Sales.create({
+                product: product._id,
+                ownerAdmin: product.ownerAdmin,
+                storefrontCompany: product.ownerAdmin,
+                customerUser: req.user._id,
+                checkoutReference,
+                quantity,
+                unitPrice: Number(product.price),
+                totalPrice,
+                customerName: req.user.name || "Storefront User",
+                customerPhone,
+                customerAddress,
+                salesChannel: "storefront",
+                paymentStatus: "pending",
+                productStatus: "sold",
+                notes,
+                soldAt: new Date(),
+            });
+
+            createdOrders.push(sale);
+        }
+
+        const hydratedOrders = await Sales.find({ _id: { $in: createdOrders.map((sale) => sale._id) } })
+            .populate("product", "name brand image category")
+            .populate("storefrontCompany", "companyName companyLogo companySlug");
+
+        res.status(201).json({
+            message: "Order placed successfully",
+            checkoutReference,
+            totalItems: hydratedOrders.reduce((sum, order) => sum + order.quantity, 0),
+            totalAmount: hydratedOrders.reduce((sum, order) => sum + order.totalPrice, 0),
+            orders: hydratedOrders,
+        });
+    } catch (error) {
+        console.error("Error creating storefront order:", error);
+        res.status(500).json({ message: "Failed to place order" });
+    }
+};
+
+export const getMyStorefrontOrders = async (req, res) => {
+    try {
+        if (req.user.role !== "user") {
+            return res.status(403).json({ message: "Only storefront users can access customer orders" });
+        }
+
+        const orders = await Sales.find({
+            customerUser: req.user._id,
+            salesChannel: "storefront",
+        })
+            .populate("product", "name brand image category")
+            .populate("storefrontCompany", "companyName companyLogo companySlug primaryColor accentColor")
+            .sort({ createdAt: -1 });
+
+        res.json(orders);
+    } catch (error) {
+        console.error("Error getting storefront orders:", error);
+        res.status(500).json({ message: "Failed to fetch customer orders" });
     }
 };
 

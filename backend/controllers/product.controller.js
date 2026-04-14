@@ -60,6 +60,81 @@ export const getFeaturedProducts = async (req, res) => {
     }
 };
 
+export const getPublicProducts = async (req, res) => {
+    try {
+        const companyId = String(req.query.companyId || "").trim();
+        const category = String(req.query.category || "").trim();
+        const search = String(req.query.search || "").trim();
+        const limit = Math.min(Math.max(Number(req.query.limit) || 24, 1), 60);
+
+        const query = { quantity: { $gt: 0 } };
+
+        if (companyId) {
+            query.ownerAdmin = companyId;
+        }
+
+        if (category) {
+            query.category = category;
+        }
+
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: "i" } },
+                { brand: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } },
+                { color: { $regex: search, $options: "i" } },
+            ];
+        }
+
+        const [products, categories] = await Promise.all([
+            Product.find(query)
+                .sort({ isFeatured: -1, createdAt: -1 })
+                .limit(limit)
+                .select("name brand description color price quantity image category isFeatured ownerAdmin createdAt")
+                .lean(),
+            Product.distinct("category", query),
+        ]);
+
+        res.json({
+            products,
+            categories: categories.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+        });
+    } catch (error) {
+        console.log("Error in getPublicProducts controller", error.message);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+export const getPublicProductById = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id)
+            .select("name brand description color price quantity image category isFeatured ownerAdmin createdAt updatedAt")
+            .lean();
+
+        if (!product || product.quantity < 1) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        const relatedProducts = await Product.find({
+            ownerAdmin: product.ownerAdmin,
+            _id: { $ne: product._id },
+            quantity: { $gt: 0 },
+        })
+            .sort({ isFeatured: -1, createdAt: -1 })
+            .limit(4)
+            .select("name brand description price quantity image category isFeatured ownerAdmin")
+            .lean();
+
+        res.json({
+            product,
+            relatedProducts,
+        });
+    } catch (error) {
+        console.log("Error in getPublicProductById controller", error.message);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
 export const createProduct = async (req, res) => {
     try {
         const { name, brand, description, color, price, quantity, category } = req.body;

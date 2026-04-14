@@ -1,19 +1,8 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import {
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Package,
-  ShoppingCart,
-  User,
-  X,
-} from "lucide-react";
-import {
-  applyWorkspaceAppearance,
-  getWorkspaceBranding,
-  getWorkspaceInitials,
-} from "../lib/workspaceBranding";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, ShoppingCart } from "lucide-react";
+import Sidebar from "../Components/Sidebar";
+import { applyWorkspaceAppearance } from "../lib/workspaceBranding";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
@@ -64,78 +53,25 @@ const AgentDashboardLayout = () => {
     }
   };
 
-  const branding = getWorkspaceBranding(user);
-  const workspaceMark = getWorkspaceInitials(user);
+  const toggleSidebar = () => setIsSidebarOpen((value) => !value);
 
   return (
-    <div className={`dashboard-layout agent-dashboard sidebar-${branding.sidebarPlacement}`}>
-      <div
-        className={`mobile-sidebar-backdrop ${isSidebarOpen ? "is-visible" : ""}`}
-        onClick={() => setIsSidebarOpen(false)}
+    <div className="dashboard-layout agent-dashboard">
+      <Sidebar
+        role="agent"
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        user={user}
+        onLogout={handleLogout}
       />
 
-      <aside className={`sidebar mobile-dashboard-sidebar ${isSidebarOpen ? "is-open" : ""}`}>
-        <div className="sidebar-logo workspace-sidebar-logo">
-          <div className="workspace-sidebar-brand">
-            <div className="workspace-sidebar-mark">
-              {branding.companyLogo ? (
-                <img src={branding.companyLogo} alt={branding.companyName} className="workspace-logo-image" />
-              ) : (
-                workspaceMark
-              )}
-            </div>
-            <div>
-              <h2>{branding.companyName}</h2>
-              <p>Agent workspace</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="mobile-sidebar-close"
-            onClick={() => setIsSidebarOpen(false)}
-            aria-label="Close sidebar"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <nav className="sidebar-menu">
-          <NavLink to="/agent" end onClick={() => setIsSidebarOpen(false)}>
-            <LayoutDashboard size={20} />
-            <span>Overview</span>
-          </NavLink>
-
-          <NavLink to="/agent/products" onClick={() => setIsSidebarOpen(false)}>
-            <Package size={20} />
-            <span>Products</span>
-          </NavLink>
-
-          <NavLink to="/agent/sales" onClick={() => setIsSidebarOpen(false)}>
-            <ShoppingCart size={20} />
-            <span>My Sales</span>
-          </NavLink>
-
-          <NavLink to="/agent/profile" onClick={() => setIsSidebarOpen(false)}>
-            <User size={20} />
-            <span>Profile</span>
-          </NavLink>
-        </nav>
-
-        <div className="sidebar-footer">
-          <button className="logout-btn" onClick={handleLogout}>
-            <LogOut size={18} />
-            Logout
-          </button>
-        </div>
-      </aside>
-
       <main className="dashboard-content">
-        <header className="dashboard-header mobile-dashboard-header">
+        <header className="dashboard-header">
           <div className="header-left">
             <button
               type="button"
               className="dashboard-menu-btn"
-              onClick={() => setIsSidebarOpen((value) => !value)}
+              onClick={toggleSidebar}
               aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
             >
               {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}

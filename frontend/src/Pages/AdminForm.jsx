@@ -14,6 +14,10 @@ const AdminForm = () => {
     city: "",
     phone: "",
     reason: "",
+    companyDescription: "",
+    companyLocation: "",
+    companyWorkingDays: "",
+    companyWorkingHours: "",
     companyLogo: null,
     preferredPrimaryColor: "#12b76a",
     preferredAccentColor: "#3154ff",
@@ -100,6 +104,35 @@ const AdminForm = () => {
             onChange={handleChange}
             required
           />
+
+          <textarea
+            name="companyDescription"
+            placeholder="Company description"
+            value={formData.companyDescription}
+            onChange={handleChange}
+          />
+
+          <input
+            name="companyLocation"
+            placeholder="Company location"
+            value={formData.companyLocation}
+            onChange={handleChange}
+          />
+
+          <div className="admin-form-grid">
+            <input
+              name="companyWorkingDays"
+              placeholder="Working days"
+              value={formData.companyWorkingDays}
+              onChange={handleChange}
+            />
+            <input
+              name="companyWorkingHours"
+              placeholder="Working hours"
+              value={formData.companyWorkingHours}
+              onChange={handleChange}
+            />
+          </div>
 
           <div className="admin-form-section">
             <h3>Workspace Preferences</h3>

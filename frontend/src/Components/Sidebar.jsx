@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   BarChart3,
+  Briefcase,
   CreditCard,
   LayoutDashboard,
   LogOut,
@@ -10,70 +11,103 @@ import {
   Settings,
   Shield,
   ShoppingCart,
+  User,
+  UserCog,
   Users,
   X,
 } from "lucide-react";
 import { getWorkspaceBranding, getWorkspaceInitials } from "../lib/workspaceBranding";
 
-const primaryLinks = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/dashboard/users", label: "Users", icon: Users },
-  { to: "/dashboard/products", label: "Products", icon: Package },
-  { to: "/dashboard/payments", label: "Payments", icon: CreditCard },
-  { to: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
-];
-
-const secondaryLinks = [
-  { to: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/dashboard/messages", label: "Messages", icon: MessageSquare },
-  { to: "/dashboard/security", label: "Security", icon: Shield },
-];
-
 const Sidebar = ({
+  role = "admin",
   isOpen = false,
   onClose = () => {},
   user = null,
+  onLogout = () => {},
+  basePath = "/dashboard",
   searchTerm = "",
   onSearchChange = () => {},
   searchItems = [],
   onSearchSelect = () => {},
-  onLogout = () => {},
 }) => {
-  const userInitial = String(user?.name || "A").trim().charAt(0).toUpperCase();
+  const userInitial = String(user?.name || "U").trim().charAt(0).toUpperCase();
   const branding = getWorkspaceBranding(user);
   const workspaceMark = getWorkspaceInitials(user);
 
-  const renderNavLink = ({ to, label, icon: Icon, end = false }) => (
-    <NavLink key={to} to={to} end={end} onClick={onClose}>
+  // Role-specific links
+  const links = {
+    admin: [
+      { to: `${basePath}`, label: "Dashboard", icon: LayoutDashboard, end: true },
+      { to: `${basePath}/users`, label: "Users", icon: Users },
+      { to: `${basePath}/products`, label: "Products", icon: Package },
+      { to: `${basePath}/payments`, label: "Payments", icon: CreditCard },
+      { to: `${basePath}/orders`, label: "Orders", icon: ShoppingCart },
+      { to: `${basePath}/analytics`, label: "Analytics", icon: BarChart3 },
+      { to: `${basePath}/messages`, label: "Messages", icon: MessageSquare },
+      { to: `${basePath}/security`, label: "Security", icon: Shield },
+      { to: `${basePath}/settings`, label: "Settings", icon: Settings },
+    ],
+    agent: [
+      { to: "/agent", label: "Overview", icon: LayoutDashboard, end: true },
+      { to: "/agent/products", label: "Products", icon: Package },
+      { to: "/agent/sales", label: "My Sales", icon: ShoppingCart },
+      { to: "/agent/profile", label: "Profile", icon: User },
+    ],
+    manager: [
+      { to: "/manager", label: "Overview", icon: LayoutDashboard, end: true },
+      { to: "/manager/agents", label: "Agents", icon: UserCog },
+      { to: "/manager/workers", label: "Workers", icon: Briefcase },
+      { to: "/manager/products", label: "Products", icon: Package },
+      { to: "/manager/sales", label: "Sales", icon: ShoppingCart },
+      { to: "/manager/payments", label: "Payments", icon: CreditCard },
+      { to: "/manager/settings", label: "Settings", icon: Settings },
+    ],
+  }[role] || [];
+
+  const renderNavLink = ({ to, label, icon: Icon, end = false }, index) => (
+    <NavLink
+      key={to || index}
+      to={to}
+      end={end}
+      className={({ isActive }) => (isActive ? "active" : "")}
+      onClick={onClose}
+    >
       <Icon size={18} />
       <span>{label}</span>
     </NavLink>
   );
 
+  const isAdmin = role === "admin";
+
   return (
     <>
       <div
-        className={`admin-sidebar-backdrop ${isOpen ? "is-visible" : ""}`}
+        className={`sidebar-backdrop ${isOpen ? "is-visible" : ""}`}
         onClick={onClose}
       />
 
-      <aside className={`sidebar admin-sidebar ${isOpen ? "is-open" : ""}`}>
-        <div className="sidebar-logo admin-sidebar-brand">
-          <div className="admin-sidebar-logo-mark">
-            {branding.companyLogo ? (
-              <img src={branding.companyLogo} alt={branding.companyName} className="workspace-logo-image" />
-            ) : (
-              workspaceMark
-            )}
+        <aside className={`sidebar rolling-sidebar ${role}-sidebar ${isOpen ? "is-open" : ""}`}>
+        <div className="sidebar-logo">
+          <div className="workspace-sidebar-brand">
+            <div className="workspace-sidebar-mark">
+              {branding.companyLogo ? (
+                <img src={branding.companyLogo} alt={branding.companyName} className="workspace-logo-image" />
+              ) : (
+                workspaceMark
+              )}
+            </div>
+            <div>
+              <h2>{branding.companyName}</h2>
+              <p>
+                {role === "admin" ? "Control center" :
+                 role === "agent" ? "Agent workspace" :
+                 "Manager workspace"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2>{branding.companyName}</h2>
-            <p>Control center</p>
-          </div>
-
           <button
             type="button"
-            className="admin-sidebar-close"
+            className="sidebar-close"
             onClick={onClose}
             aria-label="Close sidebar"
           >
@@ -81,86 +115,26 @@ const Sidebar = ({
           </button>
         </div>
 
-        <div className="admin-sidebar-scroll">
-          <div className="admin-sidebar-utility">
-            <div className="admin-sidebar-search">
-              <div className="admin-sidebar-input-shell">
-                <Search size={16} />
-                <input
-                  type="search"
-                  value={searchTerm}
-                  placeholder="Search admin pages"
-                  onChange={(event) => onSearchChange(event.target.value)}
-                />
-              </div>
+        <nav className="sidebar-menu">
+          {links.map(renderNavLink)}
+        </nav>
 
-              {searchTerm.trim() && searchItems.length > 0 && (
-                <div className="admin-sidebar-search-results">
-                  {searchItems.slice(0, 5).map((item) => (
-                    <button
-                      key={item.path}
-                      type="button"
-                      className="admin-sidebar-search-item"
-                      onClick={() => {
-                        onSearchSelect(item.path);
-                        onClose();
-                      }}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {searchTerm.trim() && searchItems.length === 0 && (
-                <div className="admin-sidebar-search-results">
-                  <div className="admin-sidebar-search-empty">
-                    No matching admin pages found.
-                  </div>
-                </div>
-              )}
-            </div>
+        {isAdmin && (
+          <div className="admin-sidebar-account">
+            <NavLink to={`${basePath}/settings?tab=profile`} onClick={onClose} className="account-profile">
+              <span className="admin-avatar">{userInitial}</span>
+              <span>
+                <strong>{user?.name || "Admin"}</strong>
+                <small>Profile</small>
+              </span>
+            </NavLink>
           </div>
+        )}
 
-          <div className="admin-sidebar-group">
-            <span className="admin-sidebar-label">Navigation</span>
-            <div className="admin-sidebar-nav-card">
-              <nav className="sidebar-menu admin-sidebar-menu">
-                {primaryLinks.map(renderNavLink)}
-              </nav>
-              <div className="admin-sidebar-divider" />
-              <nav className="sidebar-menu admin-sidebar-menu">
-                {secondaryLinks.map(renderNavLink)}
-              </nav>
-            </div>
-          </div>
-
-          <div className="admin-sidebar-group admin-sidebar-account-group">
-            <span className="admin-sidebar-label">Account</span>
-            <div className="admin-sidebar-account-actions">
-              <NavLink
-                to="/dashboard/settings?tab=profile"
-                onClick={onClose}
-                className="admin-sidebar-account-profile"
-              >
-                <span className="admin-avatar">{userInitial}</span>
-                <span className="admin-sidebar-account-copy">
-                  <strong>{user?.name || "Admin"}</strong>
-                  <small>Profile</small>
-                </span>
-              </NavLink>
-              <NavLink to="/dashboard/settings" onClick={onClose}>
-                <Settings size={16} />
-                <span>Settings</span>
-              </NavLink>
-            </div>
-          </div>
-        </div>
-
-        <div className="sidebar-footer admin-sidebar-footer">
-          <button className="logout-btn admin-logout-btn" onClick={onLogout}>
+        <div className="sidebar-footer">
+          <button className="logout-btn" onClick={onLogout}>
             <LogOut size={18} />
-            Logout
+            <span>Logout</span>
           </button>
         </div>
       </aside>
@@ -169,3 +143,4 @@ const Sidebar = ({
 };
 
 export default Sidebar;
+

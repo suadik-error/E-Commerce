@@ -48,6 +48,32 @@ const userSchema = new mongoose.Schema({
         default: "",
         trim: true,
     },
+    companySlug: {
+        type: String,
+        default: "",
+        trim: true,
+        lowercase: true,
+    },
+    companyDescription: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+    companyLocation: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+    companyWorkingDays: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+    companyWorkingHours: {
+        type: String,
+        default: "",
+        trim: true,
+    },
     companyLogo: {
         type: String,
         default: "",
@@ -62,6 +88,31 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "#3154ff",
         trim: true,
+    },
+    storefrontHeadline: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+    storefrontSubheadline: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+    storefrontAnnouncement: {
+        type: String,
+        default: "",
+        trim: true,
+    },
+    storefrontLayout: {
+        type: String,
+        enum: ["editorial", "grid", "immersive"],
+        default: "editorial",
+    },
+    storefrontCardStyle: {
+        type: String,
+        enum: ["soft", "glass", "outline"],
+        default: "soft",
     },
     sidebarPlacement: {
         type: String,
