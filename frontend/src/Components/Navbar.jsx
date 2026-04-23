@@ -96,6 +96,13 @@ const Navbar = () => {
           </NavLink>
         )}
 
+        {!isAuthenticated && (
+          <NavLink to="/signup" className="nav-pill">
+            <User size={18} />
+            <span>Sign Up</span>
+          </NavLink>
+        )}
+
         {!isAuthenticated && CLIENT_APP_URL ? (
           <a href={CLIENT_APP_URL} className="nav-pill">
             <span>Client App</span>

@@ -89,13 +89,60 @@ const Analytics = () => {
   const monthlyRevenue = useMemo(() => buildMonthlySeries(sales), [sales]);
   const peakRevenue = Math.max(...monthlyRevenue.map((item) => item.value), 1);
 
+  const downloadExcelReport = () => {
+    const header = [
+      "Date",
+      "Product",
+      "Customer",
+      "Quantity",
+      "Total Price",
+      "Product Status",
+      "Payment Status",
+      "Sold By",
+    ];
+
+    const rows = sales.map((sale) => [
+      new Date(sale.soldAt || sale.createdAt).toLocaleString(),
+      sale.product?.name || "",
+      sale.customerName || "",
+      Number(sale.quantity || 0),
+      Number(sale.totalPrice || 0),
+      sale.productStatus || "",
+      sale.paymentStatus || "",
+      sale.soldBy?.name || sale.agent?.name || "",
+    ]);
+
+    const content = [header, ...rows]
+      .map((row) =>
+        row
+          .map((cell) => String(cell ?? "").replace(/\t/g, " ").replace(/\n/g, " "))
+          .join("\t")
+      )
+      .join("\n");
+
+    const blob = new Blob([content], { type: "application/vnd.ms-excel;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `sales-report-${new Date().toISOString().slice(0, 10)}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) return <p>Loading analytics...</p>;
 
   return (
     <div className="analytics-page">
       <div className="page-header">
         <h1>Analytics</h1>
-        <p>Live sales, revenue, and product performance based on current records.</p>
+        <div className="page-header-actions">
+          <p>Live sales, revenue, and product performance based on current records.</p>
+          <button type="button" className="primary-btn" onClick={downloadExcelReport}>
+            Download Excel Report
+          </button>
+        </div>
       </div>
 
       <div className="stats-grid">

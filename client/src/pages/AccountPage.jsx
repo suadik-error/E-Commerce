@@ -8,19 +8,22 @@ const AccountPage = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [payments, setPayments] = useState([]); 
 
   useEffect(() => {
     let mounted = true;
 
     const loadAccount = async () => {
-      const [nextProfile, nextOrders] = await Promise.all([
-        getProfile(),
-        apiGet("/api/sales/mine").catch(() => []),
+        const [nextProfile, nextOrders, nextPayments] = await Promise.all([
+          getProfile(),
+          apiGet("/api/sales/mine").catch(() => []),
+          apiGet("/api/payments").catch(() => []),
       ]);
 
       if (!mounted) return;
       setProfile(nextProfile);
       setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+      setPayments(Array.isArray(nextPayments) ? nextPayments : []); 
     };
 
     loadAccount();
@@ -60,7 +63,7 @@ const AccountPage = () => {
           </div>
         </article>
 
-        <article className="client-card">
+  <article className="client-card">
           <span className="client-kicker">Orders</span>
           <h2>Recent storefront purchases</h2>
           {orders.length === 0 ? (
@@ -80,6 +83,30 @@ const AccountPage = () => {
                     <span>{new Date(order.createdAt).toLocaleDateString()}</span>
                     <span className="client-order-status">{order.paymentStatus}</span>
                   </div>
+                  <Link to="/tracking" className="client-secondary-button mt-2 block w-full text-center">
+                    Track Delivery
+                  </Link>
+                </article>
+              ))}
+            </div>
+          )}
+        </article>
+        <article className="client-card">
+          <span className="client-kicker">Payments</span>
+          <h2>Payment history</h2>
+          {payments.length === 0 ? (
+            <p className="client-muted">No payments yet.</p>
+          ) : (
+            <div className="client-order-list">
+              {payments.slice(0, 6).map((payment) => (
+                <article key={payment._id} className="client-order-card">
+                  <div className="client-summary-row">
+                    <strong>{formatCurrency(payment.amount)}</strong>
+                    <span>{payment.status}</span>
+                  </div>
+                  <p className="client-muted">
+                    {payment.description || "Card payment"} • {new Date(payment.date).toLocaleDateString()}
+                  </p>
                 </article>
               ))}
             </div>

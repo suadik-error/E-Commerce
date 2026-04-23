@@ -11,6 +11,7 @@ import CheckoutPage from "./pages/CheckoutPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import SignupPage from "./pages/SignupPage.jsx";
 import AccountPage from "./pages/AccountPage.jsx";
+import OrderTrackingPage from "./pages/OrderTrackingPage.jsx";
 
 function App() {
   return (
@@ -59,6 +60,14 @@ function App() {
             element={
               <UserRoute>
                 <AccountPage />
+              </UserRoute>
+            }
+          />
+          <Route
+            path="/tracking"
+            element={
+              <UserRoute>
+                <OrderTrackingPage />
               </UserRoute>
             }
           />

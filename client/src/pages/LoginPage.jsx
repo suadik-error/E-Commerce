@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { apiPost } from "../lib/api.js";
 import { isUserRole } from "../lib/auth.js";
 import { getStaffPortal } from "../lib/staffPortal.js";
@@ -10,6 +11,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [portal, setPortal] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -67,20 +69,34 @@ const LoginPage = () => {
           ) : null}
 
           <form className="client-form" onSubmit={handleSubmit}>
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={(event) => setFormData({ ...formData, email: event.target.value })}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={(event) => setFormData({ ...formData, password: event.target.value })}
-              required
-            />
+            <div className="client-input-shell">
+              <Mail size={17} />
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(event) => setFormData({ ...formData, email: event.target.value })}
+                required
+              />
+            </div>
+            <div className="client-input-shell">
+              <Lock size={17} />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={formData.password}
+                onChange={(event) => setFormData({ ...formData, password: event.target.value })}
+                required
+              />
+              <button
+                type="button"
+                className="client-input-icon-btn"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             <button type="submit" className="client-primary-button" disabled={loading}>
               {loading ? "Signing in..." : "Login"}
             </button>

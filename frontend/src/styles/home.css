@@ -230,6 +230,19 @@
   border-radius: 24px;
 }
 
+.home-role-icon,
+.home-workflow-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #dbeafe;
+  color: #1d4ed8;
+  margin-bottom: 12px;
+}
+
 .home-role-card h3 {
   margin: 0 0 10px;
 }
@@ -262,6 +275,14 @@
   background: #dbeafe;
   color: #1d4ed8;
   font-weight: 800;
+}
+
+:root[data-theme="dark"] .home-role-icon,
+:root[data-theme="dark"] .home-workflow-icon,
+:root[data-theme="auto"] .home-role-icon,
+:root[data-theme="auto"] .home-workflow-icon {
+  background: #1b2638;
+  color: #8ea6ff;
 }
 
 .home-cta {

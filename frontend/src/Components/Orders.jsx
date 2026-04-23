@@ -2,8 +2,6 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
-
-
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +35,11 @@ const Orders = () => {
 
   if (loading) return <p>Loading orders...</p>;
 
+  const getStatusBadge = (status) => {
+    const normalized = String(status || "pending").toLowerCase();
+    return `status ${normalized}`;
+  };
+
   return (
     <div className="orders-page">
       <div className="page-header">
@@ -59,6 +62,7 @@ const Orders = () => {
               <th>Qty</th>
               <th>Total</th>
               <th>Order Status</th>
+              <th>Delivery</th>
               <th>Payment</th>
             </tr>
           </thead>
@@ -71,12 +75,17 @@ const Orders = () => {
                 <td>{order.quantity}</td>
                 <td>${order.totalPrice}</td>
                 <td>
-                  <span className={`status ${(order.productStatus || "").toLowerCase()}`}>
+                  <span className={getStatusBadge(order.productStatus || "unknown")}>
                     {order.productStatus || "unknown"}
                   </span>
                 </td>
                 <td>
-                  <span className={`status ${(order.paymentStatus || "").toLowerCase()}`}>
+                  <span className={getStatusBadge(order.deliveryStatus || "pending")}>
+                    {order.deliveryStatus || "pending"}
+                  </span>
+                </td>
+                <td>
+                  <span className={getStatusBadge(order.paymentStatus || "unknown")}>
                     {order.paymentStatus || "unknown"}
                   </span>
                 </td>
@@ -91,3 +100,4 @@ const Orders = () => {
 };
 
 export default Orders;
+

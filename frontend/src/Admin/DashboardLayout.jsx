@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Menu, X } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import { applyWorkspaceAppearance, getWorkspaceBranding } from "../lib/workspaceBranding";
 
@@ -11,10 +11,10 @@ const adminSearchItems = [
   { label: "Users", path: "/dashboard/users" },
   { label: "Products", path: "/dashboard/products" },
   { label: "Payments", path: "/dashboard/payments" },
-  { label: "Orders", path: "/dashboard/orders" },
+{ label: "Orders", path: "/dashboard/orders" },
+  { label: "Order Receive", path: "/dashboard/order-receive" },
   { label: "Analytics", path: "/dashboard/analytics" },
   { label: "Messages", path: "/dashboard/messages" },
-  { label: "Security", path: "/dashboard/security" },
   { label: "Settings", path: "/dashboard/settings" },
 ];
 
@@ -24,9 +24,9 @@ const getAdminPageTitle = (pathname) => {
   if (pathname.includes("/products")) return "Products";
   if (pathname.includes("/payments")) return "Payments";
   if (pathname.includes("/orders")) return "Orders";
+  if (pathname.includes("/order-receive")) return "Order Receive";
   if (pathname.includes("/analytics")) return "Analytics";
   if (pathname.includes("/messages")) return "Messages";
-  if (pathname.includes("/security")) return "Security";
   if (pathname.includes("/settings")) return "Settings";
   return "Admin";
 };
@@ -35,9 +35,13 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
+    () => localStorage.getItem("dashboardSidebarCollapsed") === "true"
+  );
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const isDesktop = () => window.matchMedia("(min-width: 901px)").matches;
 
   useEffect(() => {
     fetchAdminShellData();
@@ -70,16 +74,22 @@ const DashboardLayout = () => {
   };
 
   useEffect(() => {
-    setIsSidebarOpen(false);
+    if (!isDesktop()) {
+      setIsSidebarOpen(false);
+    }
     setIsNotificationsOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
-    document.body.style.overflow = isSidebarOpen ? "hidden" : "";
+    document.body.style.overflow = isSidebarOpen && !isDesktop() ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [isSidebarOpen]);
+
+  useEffect(() => {
+    localStorage.setItem("dashboardSidebarCollapsed", String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
 
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;
 
@@ -108,16 +118,31 @@ const DashboardLayout = () => {
     }
   };
 
-  const toggleSidebar = () => setIsSidebarOpen((value) => !value);
+  const toggleSidebar = () => {
+    if (isDesktop()) {
+      setIsSidebarCollapsed((value) => !value);
+      return;
+    }
+    setIsSidebarOpen((value) => !value);
+  };
   const branding = getWorkspaceBranding(user);
 
   return (
-    <div className="dashboard-layout admin-dashboard-layout">
+    <div
+      className={`dashboard-layout admin-dashboard-layout ${
+        isSidebarCollapsed ? "sidebar-collapsed" : ""
+      }`}
+    >
       <Sidebar
         role="admin"
         basePath="/dashboard"
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        isOpen={isDesktop() ? true : isSidebarOpen}
+        isCollapsed={isDesktop() ? isSidebarCollapsed : false}
+        showLogout={false}
+        onToggleSidebar={toggleSidebar}
+        onClose={() => {
+          if (!isDesktop()) setIsSidebarOpen(false);
+        }}
         user={user}
         onLogout={handleLogout}
       />
@@ -125,14 +150,6 @@ const DashboardLayout = () => {
       <div className="admin-dashboard-main">
         <header className="admin-topbar">
           <div className="admin-topbar-left">
-            <button
-              type="button"
-              className="admin-icon-btn admin-menu-btn"
-              onClick={toggleSidebar}
-              aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
-            >
-              {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
             <div className="admin-topbar-title">
               <strong>{getAdminPageTitle(location.pathname)}</strong>
               <span>{branding.companyName} workspace</span>
@@ -179,6 +196,16 @@ const DashboardLayout = () => {
                 </div>
               )}
             </div>
+            <button type="button" className="admin-profile-chip" onClick={() => navigate("/dashboard/settings")}>
+              <span className="admin-avatar">{String(user?.name || "A").charAt(0).toUpperCase()}</span>
+              <span className="admin-profile-copy">
+                <strong>{user?.name || "Admin"}</strong>
+                <small>{user?.email || "Profile"}</small>
+              </span>
+            </button>
+            <button type="button" className="admin-icon-btn admin-logout-btn" onClick={handleLogout} aria-label="Logout">
+              <LogOut size={18} />
+            </button>
           </div>
         </header>
 

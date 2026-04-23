@@ -1,29 +1,42 @@
 import { useNavigate } from "react-router-dom";
+import { Briefcase, ShieldCheck, UserCheck, Workflow } from "lucide-react";
 
 const CLIENT_APP_URL = import.meta.env.VITE_CLIENT_APP_URL || "";
 
 const roleCards = [
   {
     title: "Admins",
+    icon: ShieldCheck,
     description:
       "Set platform direction, approve account access, manage managers, monitor activity across the business, and keep products, users, and payments under control from one top-level dashboard.",
   },
   {
     title: "Managers",
+    icon: Briefcase,
     description:
       "Supervise agents and workers, organize product movement, review sales activity, and keep day-to-day operations moving without waiting on constant admin intervention.",
   },
   {
     title: "Agents",
+    icon: UserCheck,
     description:
       "Work directly with products and sales tasks, update progress quickly, and stay focused on execution with a simpler role-specific workspace.",
   },
 ];
 
 const workflowSteps = [
-  "Use the separate client app for default user accounts and customer-facing browsing.",
-  "Keep the admin site focused on internal roles like admin, manager, and agent.",
-  "Move approved staff into the secured workspace without mixing their experience with the client portal.",
+  {
+    icon: Workflow,
+    text: "Use the separate client app for default user accounts and customer-facing browsing.",
+  },
+  {
+    icon: ShieldCheck,
+    text: "Keep the admin site focused on internal roles like admin, manager, and agent.",
+  },
+  {
+    icon: UserCheck,
+    text: "Move approved staff into the secured workspace without mixing their experience with the client portal.",
+  },
 ];
 
 const Home = () => {
@@ -42,6 +55,9 @@ const Home = () => {
             </p>
 
             <div className="home-actions">
+              <button className="home-secondary-btn" onClick={() => navigate("/signup")}>
+                Sign Up
+              </button>
               <button className="home-primary-btn" onClick={() => navigate("/login")}>
                 Staff Login
               </button>
@@ -64,7 +80,7 @@ const Home = () => {
             <div className="home-summary">
               <div>
                 <strong>Separated Access</strong>
-                <span>Customer users and staff roles no longer share the same frontend entry point.</span>
+                <span>Customer users and staff roles are seperated on entry point.</span>
               </div>
               <div>
                 <strong>Role Workspaces</strong>
@@ -112,12 +128,18 @@ const Home = () => {
         </div>
 
         <div className="home-role-grid">
-          {roleCards.map((role) => (
-            <article key={role.title} className="home-role-card">
-              <h3>{role.title}</h3>
-              <p>{role.description}</p>
-            </article>
-          ))}
+          {roleCards.map((role) => {
+            const Icon = role.icon;
+            return (
+              <article key={role.title} className="home-role-card">
+                <span className="home-role-icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <h3>{role.title}</h3>
+                <p>{role.description}</p>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -132,12 +154,18 @@ const Home = () => {
         </div>
 
         <div className="home-workflow">
-          {workflowSteps.map((step, index) => (
-            <div key={step} className="home-workflow-step">
+          {workflowSteps.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <div key={step.text} className="home-workflow-step">
+                <span className="home-workflow-icon" aria-hidden="true">
+                  <Icon size={16} />
+                </span>
               <span className="home-step-number">0{index + 1}</span>
-              <p>{step}</p>
-            </div>
-          ))}
+                <p>{step.text}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -148,6 +176,9 @@ const Home = () => {
             <h2>Use the staff portal for approved roles and the client app for default user accounts.</h2>
           </div>
           <div className="home-actions">
+            <button className="home-secondary-btn" onClick={() => navigate("/signup")}>
+              Sign Up
+            </button>
             <button className="home-secondary-btn" onClick={() => navigate("/login")}>
               Staff Login
             </button>

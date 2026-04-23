@@ -2,14 +2,14 @@ import { NavLink } from "react-router-dom";
 import {
   BarChart3,
   Briefcase,
+  ChevronLeft,
+  ChevronRight,
   CreditCard,
   LayoutDashboard,
   LogOut,
   MessageSquare,
   Package,
-  Search,
   Settings,
-  Shield,
   ShoppingCart,
   User,
   UserCog,
@@ -21,16 +21,18 @@ import { getWorkspaceBranding, getWorkspaceInitials } from "../lib/workspaceBran
 const Sidebar = ({
   role = "admin",
   isOpen = false,
+  isCollapsed = false,
   onClose = () => {},
+  onToggleSidebar = () => {},
   user = null,
   onLogout = () => {},
+  showLogout = true,
   basePath = "/dashboard",
   searchTerm = "",
   onSearchChange = () => {},
   searchItems = [],
   onSearchSelect = () => {},
 }) => {
-  const userInitial = String(user?.name || "U").trim().charAt(0).toUpperCase();
   const branding = getWorkspaceBranding(user);
   const workspaceMark = getWorkspaceInitials(user);
 
@@ -44,7 +46,6 @@ const Sidebar = ({
       { to: `${basePath}/orders`, label: "Orders", icon: ShoppingCart },
       { to: `${basePath}/analytics`, label: "Analytics", icon: BarChart3 },
       { to: `${basePath}/messages`, label: "Messages", icon: MessageSquare },
-      { to: `${basePath}/security`, label: "Security", icon: Shield },
       { to: `${basePath}/settings`, label: "Settings", icon: Settings },
     ],
     agent: [
@@ -69,6 +70,7 @@ const Sidebar = ({
       key={to || index}
       to={to}
       end={end}
+      title={isCollapsed ? label : undefined}
       className={({ isActive }) => (isActive ? "active" : "")}
       onClick={onClose}
     >
@@ -77,8 +79,6 @@ const Sidebar = ({
     </NavLink>
   );
 
-  const isAdmin = role === "admin";
-
   return (
     <>
       <div
@@ -86,7 +86,11 @@ const Sidebar = ({
         onClick={onClose}
       />
 
-        <aside className={`sidebar rolling-sidebar ${role}-sidebar ${isOpen ? "is-open" : ""}`}>
+      <aside
+        className={`sidebar rolling-sidebar ${role}-sidebar ${isOpen ? "is-open" : ""} ${
+          isCollapsed ? "is-collapsed" : ""
+        }`}
+      >
         <div className="sidebar-logo">
           <div className="workspace-sidebar-brand">
             <div className="workspace-sidebar-mark">
@@ -119,28 +123,36 @@ const Sidebar = ({
           {links.map(renderNavLink)}
         </nav>
 
-        {isAdmin && (
-          <div className="admin-sidebar-account">
-            <NavLink to={`${basePath}/settings?tab=profile`} onClick={onClose} className="account-profile">
-              <span className="admin-avatar">{userInitial}</span>
-              <span>
-                <strong>{user?.name || "Admin"}</strong>
-                <small>Profile</small>
-              </span>
-            </NavLink>
+        {showLogout ? (
+          <div className="sidebar-footer">
+            <button
+              className="sidebar-toggle-btn"
+              onClick={onToggleSidebar}
+              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+              <span>{isCollapsed ? "Expand" : "Collapse"}</span>
+            </button>
+            <button className="logout-btn" onClick={onLogout} title={isCollapsed ? "Logout" : undefined}>
+              <LogOut size={18} />
+              <span>Logout</span>
+            </button>
+          </div>
+        ) : (
+          <div className="sidebar-footer">
+            <button
+              className="sidebar-toggle-btn"
+              onClick={onToggleSidebar}
+              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+              <span>{isCollapsed ? "Expand" : "Collapse"}</span>
+            </button>
           </div>
         )}
-
-        <div className="sidebar-footer">
-          <button className="logout-btn" onClick={onLogout}>
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
-        </div>
       </aside>
     </>
   );
 };
 
 export default Sidebar;
-

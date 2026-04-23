@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 const CLIENT_APP_URL = import.meta.env.VITE_CLIENT_APP_URL || "";
@@ -21,6 +22,7 @@ const LoginPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (event) => {
     setFormData({
@@ -127,7 +129,9 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="input-group">
-              <span className="icon">Email</span>
+              <span className="icon" aria-hidden="true">
+                <Mail size={16} />
+              </span>
               <input
                 type="email"
                 name="email"
@@ -139,15 +143,25 @@ const LoginPage = () => {
             </div>
 
             <div className="input-group">
-              <span className="icon">Pass</span>
+              <span className="icon" aria-hidden="true">
+                <Lock size={16} />
+              </span>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
 
             <button type="submit" className="login-btn" disabled={loading}>
@@ -155,6 +169,9 @@ const LoginPage = () => {
             </button>
           </form>
 
+          <p className="signup-text">
+            Need an account? <Link to="/signup">Sign up</Link>
+          </p>
           <p className="signup-text">
             Need admin access? <Link to="/admin-request">Submit a request</Link>
           </p>

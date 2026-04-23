@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Eye, EyeOff, KeyRound, ShieldCheck } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 const MIN_SESSION_TIMEOUT = 15;
@@ -14,6 +15,11 @@ const Security = () => {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
   });
   const [saving, setSaving] = useState(false);
 
@@ -125,7 +131,10 @@ const Security = () => {
 
       <div className="settings-container">
         <div className="settings-card">
-          <h2>Account Protection</h2>
+          <h2>
+            <ShieldCheck size={18} />
+            Account Protection
+          </h2>
           <form onSubmit={handleSave} className="form-grid">
             <label className="checkbox-label">
               <input type="checkbox" name="twoFactor" checked={settings.twoFactor} onChange={handleToggle} />
@@ -157,18 +166,31 @@ const Security = () => {
         </div>
 
         <div className="settings-card">
-          <h2>Change Password</h2>
+          <h2>
+            <KeyRound size={18} />
+            Change Password
+          </h2>
           <form onSubmit={handlePasswordSave} className="form-grid">
             <div className="form-group">
               <label htmlFor="currentPassword">Current Password</label>
               <input
                 id="currentPassword"
                 name="currentPassword"
-                type="password"
+                type={showPasswords.currentPassword ? "text" : "password"}
                 value={passwords.currentPassword}
                 onChange={handlePasswordChange}
                 required
               />
+              <button
+                type="button"
+                className="inline-icon-btn"
+                onClick={() =>
+                  setShowPasswords((prev) => ({ ...prev, currentPassword: !prev.currentPassword }))
+                }
+                aria-label={showPasswords.currentPassword ? "Hide password" : "Show password"}
+              >
+                {showPasswords.currentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
 
             <div className="form-group">
@@ -176,12 +198,22 @@ const Security = () => {
               <input
                 id="newPassword"
                 name="newPassword"
-                type="password"
+                type={showPasswords.newPassword ? "text" : "password"}
                 minLength={8}
                 value={passwords.newPassword}
                 onChange={handlePasswordChange}
                 required
               />
+              <button
+                type="button"
+                className="inline-icon-btn"
+                onClick={() =>
+                  setShowPasswords((prev) => ({ ...prev, newPassword: !prev.newPassword }))
+                }
+                aria-label={showPasswords.newPassword ? "Hide password" : "Show password"}
+              >
+                {showPasswords.newPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
 
             <div className="form-group">
@@ -189,12 +221,22 @@ const Security = () => {
               <input
                 id="confirmPassword"
                 name="confirmPassword"
-                type="password"
+                type={showPasswords.confirmPassword ? "text" : "password"}
                 minLength={8}
                 value={passwords.confirmPassword}
                 onChange={handlePasswordChange}
                 required
               />
+              <button
+                type="button"
+                className="inline-icon-btn"
+                onClick={() =>
+                  setShowPasswords((prev) => ({ ...prev, confirmPassword: !prev.confirmPassword }))
+                }
+                aria-label={showPasswords.confirmPassword ? "Hide password" : "Show password"}
+              >
+                {showPasswords.confirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
 
             <div className="settings-actions">

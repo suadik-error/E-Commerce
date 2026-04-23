@@ -155,6 +155,18 @@
   color: #0f172a;
 }
 
+.feature-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
 .feature-card p {
   margin: 0;
   color: #64748b;
@@ -188,6 +200,47 @@
   text-align: center;
   background: #0f172a;
   color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .welcome-page,
+:root[data-theme="auto"] .welcome-page {
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 30%),
+    linear-gradient(180deg, #0a0f1a 0%, #121a28 100%);
+}
+
+:root[data-theme="dark"] .features-header h2,
+:root[data-theme="dark"] .partners h3,
+:root[data-theme="dark"] .feature-card h3,
+:root[data-theme="auto"] .features-header h2,
+:root[data-theme="auto"] .partners h3,
+:root[data-theme="auto"] .feature-card h3 {
+  color: #e2e8f0;
+}
+
+:root[data-theme="dark"] .feature-card,
+:root[data-theme="auto"] .feature-card {
+  background: rgba(18, 26, 40, 0.92);
+  border-color: #2b3a52;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34);
+}
+
+:root[data-theme="dark"] .feature-card p,
+:root[data-theme="auto"] .feature-card p {
+  color: #9fb0c9;
+}
+
+:root[data-theme="dark"] .feature-icon,
+:root[data-theme="auto"] .feature-icon {
+  background: #1b2638;
+  color: #8ea6ff;
+}
+
+:root[data-theme="dark"] .partner-pill,
+:root[data-theme="auto"] .partner-pill {
+  background: #182235;
+  border-color: #2b3a52;
+  color: #dbe7ff;
 }
 
 @media (max-width: 900px) {

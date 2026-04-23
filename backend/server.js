@@ -16,6 +16,8 @@ import agentRoutes from "./routes/agent.routes.js";
 import workerRoutes from "./routes/worker.routes.js";
 import salesRoutes from "./routes/sales.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import paymentsRoutes from "./routes/payments.routes.js";
+import messageRoutes from "./routes/message.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -117,6 +119,8 @@ app.use("/api/agents", agentRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/payments", paymentsRoutes);
+app.use("/api/messages", messageRoutes);
 app.get("/healthz", (_req, res) => res.status(200).json({ ok: true }));
 
 app.listen(PORT, () => {

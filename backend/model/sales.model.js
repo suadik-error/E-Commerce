@@ -101,6 +101,11 @@ const salesSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    deliveryStatus: {
+        type: String,
+        enum: ["pending", "shipped", "delivered", "received", "cancelled"],
+        default: "pending"
+    },
 }, { timestamps: true });
 
 const Sales = mongoose.model("Sales", salesSchema);

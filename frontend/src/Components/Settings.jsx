@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Camera,
+  Eye,
+  EyeOff,
   Key,
   LayoutTemplate,
   Mail,
@@ -43,11 +45,17 @@ const Settings = () => {
   const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [companyLogoFile, setCompanyLogoFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [savingSessionTimeout, setSavingSessionTimeout] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
   });
 
   useEffect(() => {
@@ -180,6 +188,10 @@ const Settings = () => {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      alert("Fill in all password fields before changing password.");
+      return;
+    }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert("New password and confirm password do not match");
       return;
@@ -201,6 +213,39 @@ const Settings = () => {
       alert(error.response?.data?.message || "Failed to change password");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSessionTimeoutSave = async () => {
+    setSavingSessionTimeout(true);
+    try {
+      const payload = new FormData();
+      payload.append(
+        "sessionTimeout",
+        String(
+          Math.min(
+            MAX_SESSION_TIMEOUT,
+            Math.max(MIN_SESSION_TIMEOUT, Number(profile.sessionTimeout) || MIN_SESSION_TIMEOUT)
+          )
+        )
+      );
+
+      const res = await axios.put(`${API_BASE_URL}/api/auth/profile`, payload, {
+        withCredentials: true,
+      });
+
+      if (res.data?.accessToken) {
+        window.dispatchEvent(
+          new CustomEvent("auth:token", { detail: { accessToken: res.data.accessToken } })
+        );
+      }
+
+      alert("Session timeout updated.");
+      setProfile((prev) => ({ ...prev, ...res.data }));
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to update session timeout");
+    } finally {
+      setSavingSessionTimeout(false);
     }
   };
 
@@ -638,7 +683,7 @@ const Settings = () => {
                     Current Password
                   </label>
                   <input
-                    type="password"
+                    type={showPasswords.currentPassword ? "text" : "password"}
                     id="currentPassword"
                     name="currentPassword"
                     placeholder="Enter current password"
@@ -647,6 +692,16 @@ const Settings = () => {
                       setPasswordData((prev) => ({ ...prev, currentPassword: e.target.value }))
                     }
                   />
+                  <button
+                    type="button"
+                    className="inline-icon-btn"
+                    onClick={() =>
+                      setShowPasswords((prev) => ({ ...prev, currentPassword: !prev.currentPassword }))
+                    }
+                    aria-label={showPasswords.currentPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPasswords.currentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
 
                 <div className="form-group">
@@ -667,6 +722,14 @@ const Settings = () => {
                   <p className="field-description">
                     Choose 15 minutes, 30 minutes, or 1 hour. Default is 15 minutes.
                   </p>
+                  <button
+                    type="button"
+                    className="secondary-btn"
+                    onClick={handleSessionTimeoutSave}
+                    disabled={savingSessionTimeout}
+                  >
+                    {savingSessionTimeout ? "Saving..." : "Save Session Timeout"}
+                  </button>
                 </div>
 
                 <div className="form-group">
@@ -675,7 +738,7 @@ const Settings = () => {
                     New Password
                   </label>
                   <input
-                    type="password"
+                    type={showPasswords.newPassword ? "text" : "password"}
                     id="newPassword"
                     name="newPassword"
                     placeholder="Enter new password"
@@ -685,6 +748,16 @@ const Settings = () => {
                       setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))
                     }
                   />
+                  <button
+                    type="button"
+                    className="inline-icon-btn"
+                    onClick={() =>
+                      setShowPasswords((prev) => ({ ...prev, newPassword: !prev.newPassword }))
+                    }
+                    aria-label={showPasswords.newPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPasswords.newPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
 
                 <div className="form-group">
@@ -693,7 +766,7 @@ const Settings = () => {
                     Confirm Password
                   </label>
                   <input
-                    type="password"
+                    type={showPasswords.confirmPassword ? "text" : "password"}
                     id="confirmPassword"
                     name="confirmPassword"
                     placeholder="Confirm new password"
@@ -703,6 +776,16 @@ const Settings = () => {
                       setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))
                     }
                   />
+                  <button
+                    type="button"
+                    className="inline-icon-btn"
+                    onClick={() =>
+                      setShowPasswords((prev) => ({ ...prev, confirmPassword: !prev.confirmPassword }))
+                    }
+                    aria-label={showPasswords.confirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPasswords.confirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
 
                 <div className="form-group full-width">

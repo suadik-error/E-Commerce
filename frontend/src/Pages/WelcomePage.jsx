@@ -1,18 +1,22 @@
 import { useNavigate } from "react-router-dom";
+import { Gauge, LayoutDashboard, TrendingUp } from "lucide-react";
 
 const features = [
   {
     title: "Operations Control",
+    icon: Gauge,
     description:
       "Keep products, orders, and staff activity organized from one central workspace.",
   },
   {
     title: "Role-Based Dashboards",
+    icon: LayoutDashboard,
     description:
       "Give admins, managers, and agents clean access to the tools they actually need.",
   },
   {
     title: "Faster Decisions",
+    icon: TrendingUp,
     description:
       "Track payments, sales performance, and product movement without jumping between tools.",
   },
@@ -75,12 +79,18 @@ const WelcomePage = () => {
         </div>
 
         <div className="feature-grid">
-          {features.map((feature) => (
-            <article key={feature.title} className="feature-card">
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
-            </article>
-          ))}
+          {features.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <article key={feature.title} className="feature-card">
+                <span className="feature-icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
+              </article>
+            );
+          })}
         </div>
       </section>
 

@@ -112,6 +112,20 @@
   color: #94a3b8;
 }
 
+.inline-icon-btn {
+  width: 36px;
+  height: 36px;
+  margin-top: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .settings-actions {
   display: flex;
   justify-content: center;
@@ -162,6 +176,88 @@
   .settings-card {
     padding: 18px;
   }
+}
+
+:root[data-theme="dark"] .page-header h1,
+:root[data-theme="auto"] .page-header h1 {
+  color: #e2e8f0;
+}
+
+:root[data-theme="dark"] .settings-page .page-header p,
+:root[data-theme="auto"] .settings-page .page-header p {
+  color: #9fb0c9;
+}
+
+:root[data-theme="dark"] .settings-card,
+:root[data-theme="dark"] .recent-section,
+:root[data-theme="dark"] .admin-dashboard .stat-card,
+:root[data-theme="dark"] .agent-products-page,
+:root[data-theme="dark"] .agent-sales-page,
+:root[data-theme="dark"] .agent-profile-page,
+:root[data-theme="dark"] .agent-profile-page .profile-card,
+:root[data-theme="dark"] .agent-profile-page .performance-card,
+:root[data-theme="auto"] .settings-card,
+:root[data-theme="auto"] .recent-section,
+:root[data-theme="auto"] .admin-dashboard .stat-card,
+:root[data-theme="auto"] .agent-products-page,
+:root[data-theme="auto"] .agent-sales-page,
+:root[data-theme="auto"] .agent-profile-page,
+:root[data-theme="auto"] .agent-profile-page .profile-card,
+:root[data-theme="auto"] .agent-profile-page .performance-card {
+  background: #121a28;
+  border-color: #263247;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+}
+
+:root[data-theme="dark"] .settings-card h2,
+:root[data-theme="dark"] .section-header h2,
+:root[data-theme="dark"] .stat-value,
+:root[data-theme="dark"] .agent-profile-page .detail-item p,
+:root[data-theme="auto"] .settings-card h2,
+:root[data-theme="auto"] .section-header h2,
+:root[data-theme="auto"] .stat-value,
+:root[data-theme="auto"] .agent-profile-page .detail-item p {
+  color: #f8fafc;
+}
+
+:root[data-theme="dark"] .settings-card .checkbox-label,
+:root[data-theme="dark"] .admin-dashboard .stat-card h3,
+:root[data-theme="dark"] .field-description,
+:root[data-theme="dark"] .agent-profile-page .detail-item label,
+:root[data-theme="auto"] .settings-card .checkbox-label,
+:root[data-theme="auto"] .admin-dashboard .stat-card h3,
+:root[data-theme="auto"] .field-description,
+:root[data-theme="auto"] .agent-profile-page .detail-item label {
+  color: #9fb0c9;
+}
+
+:root[data-theme="dark"] .agent-sales-page .sales-list,
+:root[data-theme="dark"] .agent-products-page .agent-picked-table,
+:root[data-theme="auto"] .agent-sales-page .sales-list,
+:root[data-theme="auto"] .agent-products-page .agent-picked-table {
+  background: #0f1724;
+  border-color: #263247;
+}
+
+:root[data-theme="dark"] .agent-sales-page .filter-tab,
+:root[data-theme="auto"] .agent-sales-page .filter-tab {
+  border-color: #324159;
+  background: #0d1523;
+  color: #dbe7ff;
+}
+
+:root[data-theme="dark"] .agent-sales-page .filter-tab:hover,
+:root[data-theme="auto"] .agent-sales-page .filter-tab:hover {
+  border-color: #4f86ff;
+  background: #162035;
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .inline-icon-btn,
+:root[data-theme="auto"] .inline-icon-btn {
+  border-color: #324159;
+  background: #0d1523;
+  color: #dbe7ff;
 }
 
 /* =========================================

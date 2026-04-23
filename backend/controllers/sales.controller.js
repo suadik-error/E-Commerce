@@ -4,6 +4,7 @@ import Agent from "../model/agent.model.js";
 import Manager from "../model/manager.model.js";
 import Notification from "../model/notification.model.js";
 import User from "../model/user.model.js";
+import Stripe from "stripe";
 
 const resolveOwnerAdminId = async (user) => {
     if (user.role === "admin") return user._id;
@@ -42,6 +43,11 @@ const getSalesScopeQuery = async (user) => {
         return { agent: agent._id, ownerAdmin: manager.admin };
     }
 
+    // For customer users, scope to their own orders
+    if (user.role === "user") {
+        return { customerUser: user._id, salesChannel: "storefront" };
+    }
+
     return null;
 };
 
@@ -73,8 +79,103 @@ const buildActorLabel = async (user) => {
     if (user.role === "admin") {
         return "Admin";
     }
+    if (user.role === "user") {
+        return `Customer ${user.name || user.email}`;
+    }
     return "User";
 };
+
+export const updateDeliveryStatus = async (req, res) => {
+    try {
+        const { deliveryStatus } = req.body;
+        if (!deliveryStatus) {
+            return res.status(400).json({ message: "deliveryStatus is required" });
+        }
+
+        const scopeQuery = await getSalesScopeQuery(req.user);
+        if (!scopeQuery) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        const sale = await Sales.findOne({ _id: req.params.id, ...scopeQuery })
+            .populate("product", "name")
+            .populate("agent", "name")
+            .populate("manager");
+
+        if (!sale) {
+            return res.status(404).json({ message: "Sale not found" });
+        }
+
+        // Validate enum
+        const validStatuses = ["pending", "shipped", "delivered", "received", "cancelled"];
+        if (!validStatuses.includes(deliveryStatus)) {
+            return res.status(400).json({ message: `Invalid deliveryStatus. Must be one of: ${validStatuses.join(", ")}` });
+        }
+
+        // Role-based permissions
+        const canShipOrDeliver = ["admin", "manager", "agent"].includes(req.user.role);
+        const canReceive = req.user.role === "user" || canShipOrDeliver;
+
+        if (deliveryStatus === "shipped" || deliveryStatus === "delivered") {
+            if (!canShipOrDeliver) {
+                return res.status(403).json({ message: "Only admin, manager, or agent can ship/deliver" });
+            }
+        }
+
+        if (deliveryStatus === "received") {
+            if (!canReceive) {
+                return res.status(403).json({ message: "Only customer or staff can mark as received" });
+            }
+            if (sale.deliveryStatus === "received") {
+                return res.status(400).json({ message: "Already marked as received" });
+            }
+        }
+
+        sale.deliveryStatus = deliveryStatus;
+        await sale.save();
+
+        // Notifications
+        const actorLabel = await buildActorLabel(req.user);
+
+        if (deliveryStatus === "delivered") {
+            // Notify customer if storefront order
+            if (sale.customerUser && sale.salesChannel === "storefront") {
+                await Notification.create({
+                    recipient: sale.customerUser,
+                    recipientRole: "user",
+                    type: "order_delivered",
+                    title: "Order Delivered",
+                    message: `${actorLabel} marked your order ${sale.checkoutReference} as delivered`,
+                    reference: { model: "Sales", id: sale._id }
+                });
+            }
+        }
+
+        if (deliveryStatus === "received") {
+            // Notify staff
+            if (sale.ownerAdmin) {
+                await Notification.create({
+                    recipient: sale.ownerAdmin,
+                    recipientRole: "admin",
+                    type: "delivery_confirmed",
+                    title: "Delivery Confirmed",
+                    message: `${actorLabel} confirmed receiving order ${sale.checkoutReference}`,
+                    reference: { model: "Sales", id: sale._id }
+                });
+            }
+        }
+
+        res.json({
+            message: "Delivery status updated successfully",
+            sale
+        });
+    } catch (error) {
+        console.error("Error updating delivery status:", error);
+        res.status(500).json({ message: "Failed to update delivery status" });
+    }
+};
+
+// ... (rest of existing exports remain the same - createSale, getAllSales, etc.)
 
 export const createSale = async (req, res) => {
     try {
@@ -140,6 +241,7 @@ export const createSale = async (req, res) => {
             productStatus: initialProductStatus,
             paymentStatus: initialPaymentStatus,
             soldAt,
+            deliveryStatus: "pending"
         });
 
         product.quantity -= requestedQuantity;
@@ -192,6 +294,8 @@ export const createSale = async (req, res) => {
         res.status(500).json({ message: "Failed to create sale" });
     }
 };
+
+// Include all other existing functions: createStorefrontOrder, getMyStorefrontOrders, getAllSales, etc. (omitted for brevity, but must be copied exactly)
 
 export const createStorefrontOrder = async (req, res) => {
     try {
@@ -267,6 +371,7 @@ export const createStorefrontOrder = async (req, res) => {
                 salesChannel: "storefront",
                 paymentStatus: "pending",
                 productStatus: "sold",
+                deliveryStatus: "pending",
                 notes,
                 soldAt: new Date(),
             });
@@ -454,6 +559,7 @@ export const updateSale = async (req, res) => {
                     paymentStatus: sale.paymentStatus,
                     productStatus: "sold",
                     soldAt: new Date(),
+                    deliveryStatus: sale.deliveryStatus
                 });
 
                 sale.quantity = remainingQuantity;
@@ -621,6 +727,38 @@ export const deleteSale = async (req, res) => {
     }
 };
 
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2024-06-20',
+}) : null;
+
+export const createPaymentIntent = async (req, res) => {
+  try {
+    const totalAmount = req.body.amount;
+    if (!totalAmount || totalAmount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(totalAmount * 100), // cents
+      currency: 'usd',
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        customerPhone: req.body.customerPhone || '',
+        customerAddress: req.body.customerAddress || '',
+      },
+    });
+
+    res.json({
+      client_secret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    console.error('PaymentIntent error:', error);
+    res.status(500).json({ error: 'Failed to create payment intent' });
+  }
+};
+
 export const getSalesStats = async (req, res) => {
     try {
         let query = {};
@@ -661,3 +799,5 @@ export const getSalesStats = async (req, res) => {
         res.status(500).json({ message: "Failed to get sales stats" });
     }
 };
+
+

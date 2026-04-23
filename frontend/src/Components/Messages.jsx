@@ -1,120 +1,140 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
-
-
 const Messages = () => {
-  const [notifications, setNotifications] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [error, setError] = useState("");
+  const scrollRef = useRef(null);
+
+  const fetchMessages = async ({ initial = false } = {}) => {
+    if (initial) setLoading(true);
+    try {
+      const [profileRes, messagesRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/api/messages`, { credentials: "include" }),
+      ]);
+
+      if (profileRes.ok) {
+        const profile = await profileRes.json();
+        setCurrentUser(profile);
+      }
+
+      if (!messagesRes.ok) {
+        throw new Error("Failed to fetch internal chat messages");
+      }
+
+      const data = await messagesRes.json();
+      setMessages(Array.isArray(data) ? data : []);
+      setError("");
+    } catch (fetchError) {
+      setError(fetchError.message || "Failed to fetch messages");
+    } finally {
+      if (initial) setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchNotifications();
+    fetchMessages({ initial: true });
+    const timer = setInterval(() => fetchMessages(), 2500);
+    return () => clearInterval(timer);
   }, []);
 
-  const fetchNotifications = async () => {
-    setLoading(true);
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages.length]);
+
+  const sendMessage = async (event) => {
+    event.preventDefault();
+    const content = draft.trim();
+    if (!content) return;
+
     try {
-      const res = await fetch(`${API_BASE_URL}/api/notifications`, {
+      setSending(true);
+      const res = await fetch(`${API_BASE_URL}/api/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify({ content }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        setNotifications(Array.isArray(data) ? data : []);
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to send message");
       }
-    } catch (error) {
-      console.error("Failed to fetch notifications");
+
+      setDraft("");
+      await fetchMessages();
+    } catch (sendError) {
+      setError(sendError.message || "Failed to send message");
     } finally {
-      setLoading(false);
+      setSending(false);
     }
   };
 
-  const markAsRead = async (id) => {
-    try {
-      await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
-        method: "PUT",
-        credentials: "include",
-      });
-      await fetchNotifications();
-    } catch (error) {
-      console.error("Failed to mark as read");
-    }
-  };
-
-  const deleteNotification = async (id) => {
-    try {
-      await fetch(`${API_BASE_URL}/api/notifications/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      await fetchNotifications();
-    } catch (error) {
-      console.error("Failed to delete notification");
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
-        method: "PUT",
-        credentials: "include",
-      });
-      await fetchNotifications();
-    } catch (error) {
-      console.error("Failed to mark all as read");
-    }
-  };
+  const sortedMessages = useMemo(
+    () =>
+      [...messages].sort(
+        (first, second) => new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
+      ),
+    [messages]
+  );
 
   if (loading) return <p>Loading messages...</p>;
 
   return (
     <div className="messages-page">
       <div className="page-header">
-        <h1>Messages</h1>
-        <button className="primary-btn" onClick={markAllAsRead}>
-          Mark All Read
+        <h1>Internal Chat</h1>
+        <button type="button" className="secondary-btn" onClick={() => fetchMessages()}>
+          Refresh
         </button>
       </div>
 
-      <div className="table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Message</th>
-              <th>Type</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {notifications.map((item) => (
-              <tr key={item._id}>
-                <td>{item.title}</td>
-                <td>{item.message}</td>
-                <td>{item.type}</td>
-                <td>{new Date(item.createdAt).toLocaleString()}</td>
-                <td>
-                  <span className={`status ${item.isRead ? "active" : "inactive"}`}>
-                    {item.isRead ? "Read" : "Unread"}
-                  </span>
-                </td>
-                <td className="actions">
-                  {!item.isRead && (
-                    <button className="edit" onClick={() => markAsRead(item._id)}>
-                      Read
-                    </button>
-                  )}
-                  <button className="danger" onClick={() => deleteNotification(item._id)}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {notifications.length === 0 && <p style={{ padding: "12px" }}>No messages found</p>}
+      {error ? <p className="error-text">{error}</p> : null}
+
+      <div className="chat-shell">
+        <div className="chat-list" ref={scrollRef}>
+          {sortedMessages.length === 0 ? (
+            <p className="chat-empty">No internal messages yet. Start the conversation.</p>
+          ) : (
+            sortedMessages.map((message) => {
+              const ownMessage = String(message.sender) === String(currentUser?._id);
+              return (
+                <article
+                  key={message._id}
+                  className={`chat-bubble ${ownMessage ? "mine" : "theirs"}`}
+                >
+                  <header>
+                    <strong>{message.senderName || "Unknown"}</strong>
+                    <small>
+                      {message.senderRole} · {new Date(message.createdAt).toLocaleTimeString()}
+                    </small>
+                  </header>
+                  <p>{message.content}</p>
+                </article>
+              );
+            })
+          )}
+        </div>
+
+        <form className="chat-input-row" onSubmit={sendMessage}>
+          <input
+            type="text"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="Type a message to admins, managers, and agents..."
+            maxLength={1000}
+          />
+          <button type="submit" className="primary-btn" disabled={sending || !draft.trim()}>
+            {sending ? "Sending..." : "Send"}
+          </button>
+        </form>
       </div>
     </div>
   );

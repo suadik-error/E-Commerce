@@ -368,6 +368,42 @@ img {
   outline: none;
 }
 
+.client-input-shell {
+  width: 100%;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.client-input-shell svg {
+  color: #64748b;
+  flex: 0 0 auto;
+}
+
+.client-input-shell input {
+  min-height: 52px;
+  padding: 0;
+}
+
+.client-input-icon-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 10px;
+  background: #ffffff;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
 .client-form textarea {
   min-height: 120px;
   resize: vertical;

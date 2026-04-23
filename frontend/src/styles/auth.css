@@ -133,6 +133,10 @@
 .input-group .icon {
   margin-right: 8px;
   font-size: 16px;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .input-group input {
@@ -140,6 +144,20 @@
   outline: none;
   width: 100%;
   font-size: 15px;
+}
+
+.password-toggle-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
 }
 
 /* Button */
@@ -233,6 +251,16 @@
 .error-text {
   background: #fee2e2;
   color: #991b1b;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.success-text {
+  background: #dcfce7;
+  color: #166534;
   padding: 10px;
   border-radius: 6px;
   font-size: 14px;

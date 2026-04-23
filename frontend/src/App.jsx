@@ -15,7 +15,6 @@ import Settings from "./Components/Settings.jsx";
 import Orders from "./Components/Orders.jsx";
 import Analytics from "./Components/Analytics.jsx";
 import Messages from "./Components/Messages.jsx";
-import Security from "./Components/Security.jsx";
 
 import AdminOverview from "./Admin/Overview.jsx";
 import Managers from "./Admin/Managers.jsx";
@@ -67,7 +66,6 @@ function App() {
             <Route path="orders" element={<Orders />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="messages" element={<Messages />} />
-            <Route path="security" element={<Security />} />
             <Route path="users" element={<Users />} />
             <Route path="settings" element={<Settings />} />
           </Route>
