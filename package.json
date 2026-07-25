@@ -16,8 +16,6 @@
     "node": "20"
   },
   "dependencies": {
-    "@stripe/react-stripe-js": "^6.2.0",
-    "@stripe/stripe-js": "^9.2.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
@@ -29,7 +27,8 @@
     "mongoose": "^8.8.0",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
-    "stripe": "^17.3.1"
+    "resend": "^6.17.2",
+    "twilio": "^6.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"

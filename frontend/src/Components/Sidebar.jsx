@@ -52,6 +52,7 @@ const Sidebar = ({
       { to: "/agent", label: "Overview", icon: LayoutDashboard, end: true },
       { to: "/agent/products", label: "Products", icon: Package },
       { to: "/agent/sales", label: "My Sales", icon: ShoppingCart },
+      { to: "/agent/messages", label: "Messages", icon: MessageSquare },
       { to: "/agent/profile", label: "Profile", icon: User },
     ],
     manager: [
@@ -61,6 +62,7 @@ const Sidebar = ({
       { to: "/manager/products", label: "Products", icon: Package },
       { to: "/manager/sales", label: "Sales", icon: ShoppingCart },
       { to: "/manager/payments", label: "Payments", icon: CreditCard },
+      { to: "/manager/messages", label: "Messages", icon: MessageSquare },
       { to: "/manager/settings", label: "Settings", icon: Settings },
     ],
   }[role] || [];

@@ -165,18 +165,26 @@ export const createUser = async (req, res) => {
       return res.status(500).json({ message: "Failed to create role details", error: detailError.message });
     }
 
+    const normalizedPhone = phone ? String(phone).trim() : "";
+
+    const emailDeliveryPromise = sendCredentialsEmail({
+      toEmail: user.email,
+      name: user.name,
+      password: generatedPassword,
+    });
+
+    const smsDeliveryPromise = normalizedPhone
+      ? sendCredentialsSms({
+          toPhone: normalizedPhone,
+          name: user.name,
+          email: user.email,
+          password: generatedPassword,
+        })
+      : Promise.resolve({ sent: false, channel: "sms", reason: "Phone number missing" });
+
     const [emailDelivery, smsDelivery] = await Promise.all([
-      sendCredentialsEmail({
-        toEmail: user.email,
-        name: user.name,
-        password: generatedPassword,
-      }),
-      sendCredentialsSms({
-        toPhone: phone,
-        name: user.name,
-        email: user.email,
-        password: generatedPassword,
-      }),
+      emailDeliveryPromise,
+      smsDeliveryPromise,
     ]);
 
     res.status(201).json({

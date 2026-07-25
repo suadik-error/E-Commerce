@@ -42,6 +42,3 @@ export const apiPost = (path, body) =>
     method: "POST",
     body: JSON.stringify(body),
   });
-
-export const apiPostPaymentIntent = (body = {}) =>
-  apiPost("/api/sales/payment-intent", body);

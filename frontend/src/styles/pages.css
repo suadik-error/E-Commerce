@@ -635,13 +635,162 @@
 }
 
 @media (max-width: 768px) {
+  .agent-overview-page,
   .agent-products-page,
   .agent-sales-page,
   .agent-profile-page {
     padding: 14px;
+    border-radius: 14px;
+  }
+
+  .agent-overview-page .stats-grid,
+  .agent-sales-page .stats-grid,
+  .agent-profile-page .stats-grid {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .agent-products-page .page-header,
+  .agent-sales-page .page-header,
+  .agent-profile-page .page-header,
+  .agent-overview-page .page-header {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .agent-products-page .filter-tabs,
+  .agent-sales-page .filter-tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .agent-products-page .filter-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .agent-products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 12px;
+  }
+
+  .agent-products-page .product-image {
+    height: 160px;
+  }
+
+  .agent-products-page .product-info {
+    padding: 12px;
+  }
+
+  .agent-products-page .btn-primary,
+  .agent-profile-page .btn-primary,
+  .agent-profile-page .btn-secondary,
+  .agent-sales-page .btn-primary,
+  .agent-sales-page .btn-secondary,
+  .agent-sales-page .primary-btn,
+  .agent-products-page .primary-btn,
+  .agent-sales-page .secondary-btn,
+  .agent-products-page .secondary-btn {
+    width: 100%;
+  }
+
+  .agent-sales-page .sales-list,
+  .agent-products-page .agent-picked-table {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .agent-sales-page .data-table,
+  .agent-products-page .data-table {
+    min-width: 680px;
+  }
+
+  .agent-sales-page .data-table th,
+  .agent-sales-page .data-table td,
+  .agent-products-page .data-table th,
+  .agent-products-page .data-table td {
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+
+  .agent-sales-page .data-table td:last-child {
+    min-width: 150px;
+  }
+
+  .agent-sales-page .btn-sold,
+  .agent-sales-page .btn-return,
+  .agent-sales-page .btn-confirm {
+    display: inline-flex;
+    justify-content: center;
+    margin: 2px 4px 2px 0;
+    white-space: nowrap;
   }
 
   .agent-profile-page .profile-actions {
     flex-direction: column;
+    width: 100%;
+  }
+
+  .agent-profile-page .profile-header {
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .agent-profile-page .profile-avatar {
+    width: 78px;
+    height: 78px;
+    font-size: 30px;
+  }
+
+  .agent-profile-page .profile-info {
+    min-width: 0;
+  }
+
+  .agent-profile-page .profile-info h2,
+  .agent-profile-page .profile-info .email {
+    overflow-wrap: anywhere;
+  }
+
+  .agent-profile-page .form-actions {
+    flex-direction: column;
+  }
+
+  .agent-products-page .modal-content,
+  .agent-sales-page .modal-content {
+    width: min(100%, 420px);
+    padding: 22px;
+  }
+}
+
+@media (max-width: 420px) {
+  .agent-overview-page,
+  .agent-products-page,
+  .agent-sales-page,
+  .agent-profile-page {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .agent-products-page .product-image {
+    height: 145px;
+  }
+
+  .agent-profile-page .profile-card,
+  .agent-profile-page .performance-card {
+    padding: 14px;
+  }
+
+  .agent-profile-page .profile-header {
+    flex-direction: column;
+  }
+
+  .agent-products-page .modal-content,
+  .agent-sales-page .modal-content {
+    padding: 18px;
   }
 }

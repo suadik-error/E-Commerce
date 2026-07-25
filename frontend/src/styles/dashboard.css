@@ -1,11 +1,11 @@
 /* Dashboard Layout Styles */
 
+@import url("./rolling-sidebar.css");
+
 :root {
   --workspace-primary: #12b76a;
   --workspace-accent: #3154ff;
 }
-
-@import url("./rolling-sidebar.css");
 
 .dashboard-layout {
   display: flex;
@@ -2920,4 +2920,104 @@
 .dashboard-header,
 .admin-topbar {
   top: 0;
+}
+
+/* Agent mobile responsiveness */
+.agent-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0f172a;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+:root[data-theme="dark"] .agent-menu-btn,
+:root[data-theme="auto"] .agent-menu-btn {
+  background: #0d1523;
+  border-color: #324159;
+  color: #e2e8f0;
+}
+
+@media (max-width: 900px) {
+  .agent-dashboard.dashboard-layout {
+    display: block;
+  }
+
+  .agent-dashboard .dashboard-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 14px;
+  }
+
+  .agent-dashboard .dashboard-header {
+    align-items: center;
+  }
+
+  .agent-dashboard .header-left,
+  .agent-dashboard .header-right {
+    min-width: 0;
+  }
+
+  .agent-dashboard .header-left {
+    flex: 1 1 auto;
+  }
+
+  .agent-dashboard .header-left h2 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .agent-dashboard .agent-menu-btn {
+    display: inline-flex;
+  }
+
+  .agent-dashboard .agent-sidebar .sidebar-logo,
+  .agent-dashboard .agent-sidebar .sidebar-footer {
+    display: flex;
+  }
+
+  .agent-dashboard .agent-sidebar .sidebar-logo {
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 560px) {
+  .agent-dashboard .dashboard-content {
+    padding: 10px;
+  }
+
+  .agent-dashboard .dashboard-header {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .agent-dashboard .header-right {
+    gap: 6px;
+  }
+
+  .agent-dashboard .topbar-profile-chip {
+    width: 42px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .agent-dashboard .topbar-profile-chip span {
+    display: none;
+  }
+
+  .agent-dashboard .notification-btn,
+  .agent-dashboard .agent-menu-btn {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
 }

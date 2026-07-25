@@ -42,7 +42,12 @@ export const getFeaturedProducts = async (req, res) => {
     try {
         let featuredProducts = await redis.get("featured_products");
         if (featuredProducts) {
-            return res.json(JSON.parse(featuredProducts));
+            try {
+                return res.json(JSON.parse(featuredProducts));
+            } catch (parseError) {
+                console.log("Invalid featured_products cache, rebuilding:", parseError.message);
+                await redis.del("featured_products");
+            }
         }
 
         featuredProducts = await Product.find({ isFeatured: true }).lean();

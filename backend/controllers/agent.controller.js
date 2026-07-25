@@ -18,6 +18,11 @@ export const createAgent = async (req, res) => {
         const { name, email, phone, location, governmentId, dateOfBirth, address, profilePicture } = req.body;
         const uploadedProfilePicture = req.file?.path;
         const normalizedEmail = String(email || "").toLowerCase().trim();
+        const normalizedPhone = String(phone || "").trim();
+
+        if (!normalizedPhone) {
+            return res.status(400).json({ message: "Agent phone number is required" });
+        }
 
         const existingAgent = await Agent.findOne({ email: normalizedEmail });
         if (existingAgent) {
@@ -77,7 +82,7 @@ export const createAgent = async (req, res) => {
                     password: generatedPassword,
                 }),
                 sendCredentialsSms({
-                    toPhone: phone,
+                    toPhone: normalizedPhone,
                     name,
                     email: normalizedEmail,
                     password: generatedPassword,

@@ -41,7 +41,8 @@ const SignUpPage = () => {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const rawText = await response.text();
+      const data = rawText ? JSON.parse(rawText) : {};
 
       if (!response.ok) {
         const existingRole = String(data?.existingRole || "").toLowerCase();

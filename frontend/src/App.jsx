@@ -84,6 +84,7 @@ function App() {
             <Route path="products" element={<ManagerProducts />} />
             <Route path="sales" element={<ManagerSales />} />
             <Route path="payments" element={<ManagerPayments />} />
+            <Route path="messages" element={<Messages />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 
@@ -98,6 +99,7 @@ function App() {
             <Route index element={<AgentOverview />} />
             <Route path="products" element={<AgentProducts />} />
             <Route path="sales" element={<AgentSales />} />
+            <Route path="messages" element={<Messages />} />
             <Route path="profile" element={<AgentProfile />} />
           </Route>
         </Routes>

@@ -37,6 +37,7 @@ useEffect(() => {
     if (pathname.includes("/products")) return "Products";
     if (pathname.includes("/sales")) return "Sales";
     if (pathname.includes("/payments")) return "Payments";
+    if (pathname.includes("/messages")) return "Messages";
     if (pathname.includes("/order-receive")) return "Order Receive";
     return "Manager";
   };

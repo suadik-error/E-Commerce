@@ -22,7 +22,7 @@ const features = [
   },
 ];
 
-const partners = ["Amazon", "Shopify", "Paystack", "Stripe"];
+const partners = ["Amazon", "Shopify", "Paystack"];
 
 const WelcomePage = () => {
   const navigate = useNavigate();

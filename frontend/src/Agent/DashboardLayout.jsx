@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, ShoppingCart, User } from "lucide-react";
+import { LogOut, Menu, ShoppingCart, User } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import { applyWorkspaceAppearance } from "../lib/workspaceBranding";
 
@@ -71,6 +71,15 @@ const AgentDashboardLayout = () => {
     setIsSidebarOpen((value) => !value);
   };
 
+  const getAgentPageTitle = (pathname) => {
+    if (pathname === "/agent") return `Welcome, ${user?.name || "Agent"}`;
+    if (pathname.includes("/products")) return "Products";
+    if (pathname.includes("/sales")) return "My Sales";
+    if (pathname.includes("/messages")) return "Messages";
+    if (pathname.includes("/profile")) return "Profile";
+    return "Agent";
+  };
+
   return (
     <div className={`dashboard-layout agent-dashboard ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
       <Sidebar
@@ -89,7 +98,15 @@ const AgentDashboardLayout = () => {
       <main className="dashboard-content">
         <header className="dashboard-header">
           <div className="header-left">
-            <h2>Welcome, {user?.name || "Agent"}</h2>
+            <button
+              type="button"
+              className="agent-menu-btn"
+              onClick={toggleSidebar}
+              aria-label="Open navigation"
+            >
+              <Menu size={20} />
+            </button>
+            <h2>{getAgentPageTitle(location.pathname)}</h2>
           </div>
           <div className="header-right">
             <button

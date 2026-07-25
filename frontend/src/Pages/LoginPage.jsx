@@ -47,7 +47,8 @@ const LoginPage = () => {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      const rawText = await res.text();
+      const data = rawText ? JSON.parse(rawText) : {};
 
       if (!res.ok) {
         throw new Error(data.message || "Login failed");

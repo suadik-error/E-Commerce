@@ -3,8 +3,8 @@ import Product from "../model/product.model.js";
 import Agent from "../model/agent.model.js";
 import Manager from "../model/manager.model.js";
 import Notification from "../model/notification.model.js";
+import Payment from "../model/payment.model.js";
 import User from "../model/user.model.js";
-import Stripe from "stripe";
 
 const resolveOwnerAdminId = async (user) => {
     if (user.role === "admin") return user._id;
@@ -386,6 +386,8 @@ export const createStorefrontOrder = async (req, res) => {
         res.status(201).json({
             message: "Order placed successfully",
             checkoutReference,
+            customerEmail: req.user.email,
+            customerName: req.user.name || "Storefront User",
             totalItems: hydratedOrders.reduce((sum, order) => sum + order.quantity, 0),
             totalAmount: hydratedOrders.reduce((sum, order) => sum + order.totalPrice, 0),
             orders: hydratedOrders,
@@ -393,6 +395,75 @@ export const createStorefrontOrder = async (req, res) => {
     } catch (error) {
         console.error("Error creating storefront order:", error);
         res.status(500).json({ message: "Failed to place order" });
+    }
+};
+
+export const verifyPaystackPayment = async (req, res) => {
+    try {
+        const { reference, checkoutReference } = req.body;
+
+        if (!reference || !checkoutReference) {
+            return res.status(400).json({ message: "reference and checkoutReference are required" });
+        }
+
+        const secretKey = process.env.PAYSTACK_SECRET_KEY;
+        if (!secretKey) {
+            return res.status(500).json({ message: "Paystack secret key is not configured" });
+        }
+
+        const verifyResponse = await fetch(
+            `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${secretKey}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        const verifyData = await verifyResponse.json();
+        if (!verifyResponse.ok || !verifyData.status) {
+            const errorMessage = verifyData.message || "Failed to verify payment";
+            return res.status(400).json({ message: errorMessage });
+        }
+
+        if (verifyData.data.status !== "success") {
+            return res.status(400).json({ message: "Payment was not successful" });
+        }
+
+        const orders = await Sales.find({ checkoutReference });
+        if (!orders.length) {
+            return res.status(404).json({ message: "Orders not found for this checkout reference" });
+        }
+
+        const updatedOrders = await Promise.all(
+            orders.map(async (order) => {
+                order.paymentStatus = "paid";
+                order.paymentConfirmedAt = new Date();
+                await order.save();
+                return order;
+            })
+        );
+
+        if (req.user?._id) {
+            await Payment.create({
+                user: req.user._id,
+                amount: verifyData.data.amount / 100,
+                status: "Completed",
+                description: `Paystack payment ${reference}`,
+            });
+        }
+
+        res.json({
+            message: "Payment verified successfully",
+            reference,
+            checkoutReference,
+            orders: updatedOrders,
+        });
+    } catch (error) {
+        console.error("Error verifying Paystack payment:", error);
+        res.status(500).json({ message: "Failed to verify payment" });
     }
 };
 
@@ -725,38 +796,6 @@ export const deleteSale = async (req, res) => {
         console.error("Error deleting sale:", error);
         res.status(500).json({ message: "Failed to delete sale" });
     }
-};
-
-const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
-}) : null;
-
-export const createPaymentIntent = async (req, res) => {
-  try {
-    const totalAmount = req.body.amount;
-    if (!totalAmount || totalAmount <= 0) {
-      return res.status(400).json({ error: 'Invalid amount' });
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(totalAmount * 100), // cents
-      currency: 'usd',
-      automatic_payment_methods: {
-        enabled: true,
-      },
-      metadata: {
-        customerPhone: req.body.customerPhone || '',
-        customerAddress: req.body.customerAddress || '',
-      },
-    });
-
-    res.json({
-      client_secret: paymentIntent.client_secret,
-    });
-  } catch (error) {
-    console.error('PaymentIntent error:', error);
-    res.status(500).json({ error: 'Failed to create payment intent' });
-  }
 };
 
 export const getSalesStats = async (req, res) => {

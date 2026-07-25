@@ -4,6 +4,9 @@ import { apiPost } from "../lib/api.js";
 import { clearCart, getCartCount, getCartTotal, readCart } from "../lib/cart.js";
 import { formatCurrency } from "../lib/storefront.js";
 
+const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "";
+const PAYSTACK_CURRENCY = import.meta.env.VITE_PAYSTACK_CURRENCY || "NGN";
+
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const [cart] = useState(() => readCart());
@@ -11,13 +14,11 @@ const CheckoutPage = () => {
     customerPhone: "",
     customerAddress: "",
     notes: "",
-    paymentMethod: "card",
-    cardToken: "" // For secure token
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [cardIframeKey, setCardIframeKey] = useState(null);
+  const [paystackLoaded, setPaystackLoaded] = useState(false);
 
   const groupedCompanies = (() => {
     return Array.from(new Set(cart.map((item) => item.companyName).filter(Boolean)));
@@ -27,11 +28,23 @@ const CheckoutPage = () => {
     if (cart.length === 0) {
       navigate("/cart");
     }
-  }, [cart.length, navigate]);
 
-  const handleCardToken = (token) => {
-    setFormData(prev => ({ ...prev, cardToken: token }));
-  };
+    if (typeof window !== "undefined") {
+      const existingScript = document.querySelector("script[data-paystack-script]");
+      if (existingScript) {
+        setPaystackLoaded(Boolean(window.PaystackPop));
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://js.paystack.co/v1/inline.js";
+      script.async = true;
+      script.dataset.paystackScript = "true";
+      script.onload = () => setPaystackLoaded(Boolean(window.PaystackPop));
+      script.onerror = () => setError("Failed to load Paystack payment library.");
+      document.body.appendChild(script);
+    }
+  }, [cart.length, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -41,8 +54,23 @@ const CheckoutPage = () => {
       return;
     }
 
-    if (!formData.cardToken) {
-      setError("Please complete card details.");
+    if (!formData.customerPhone.trim()) {
+      setError("Please provide a phone number.");
+      return;
+    }
+
+    if (!formData.customerAddress.trim()) {
+      setError("Please provide a delivery address.");
+      return;
+    }
+
+    if (!PAYSTACK_PUBLIC_KEY) {
+      setError("Paystack public key is not configured.");
+      return;
+    }
+
+    if (!paystackLoaded || !window.PaystackPop) {
+      setError("Paystack payment library is not loaded yet. Please refresh the page.");
       return;
     }
 
@@ -51,25 +79,47 @@ const CheckoutPage = () => {
       setError("");
       setSuccess("");
 
-      // Submit secure token to backend
       const orderRes = await apiPost("/api/sales/checkout", {
         items: cart.map((item) => ({ productId: item._id, quantity: item.quantity })),
         customerPhone: formData.customerPhone,
         customerAddress: formData.customerAddress,
         notes: formData.notes,
         paymentMethod: "card",
-        cardToken: formData.cardToken,
-      });
-      
-      // Record payment
-      await apiPost("/api/payments", {
-        amount: getCartTotal(cart),
-        description: `Order ${orderRes.checkoutReference} - Card payment`
       });
 
-      clearCart();
-      setSuccess("Payment secure! Order confirmed.");
-      setTimeout(() => navigate("/account", { state: { message: 'Secure payment successful! Order placed.' } }), 2000);
+      const amountInKobo = Math.round(orderRes.totalAmount * 100);
+
+      const handler = window.PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: orderRes.customerEmail || "",
+        amount: amountInKobo,
+        currency: PAYSTACK_CURRENCY,
+        ref: orderRes.checkoutReference,
+        metadata: {
+          customerName: orderRes.customerName,
+          customerPhone: formData.customerPhone,
+          customerAddress: formData.customerAddress,
+        },
+        callback: async (response) => {
+          try {
+            await apiPost("/api/sales/paystack/verify", {
+              reference: response.reference,
+              checkoutReference: orderRes.checkoutReference,
+            });
+
+            clearCart();
+            setSuccess("Payment successful! Order confirmed.");
+            setTimeout(() => navigate("/account", { state: { message: 'Payment successful! Order placed.' } }), 2000);
+          } catch (verifyError) {
+            setError(verifyError.message || "Payment verification failed after successful checkout.");
+          }
+        },
+        onClose: () => {
+          setError("Payment window closed. Your order remains pending until payment is completed.");
+        },
+      });
+
+      handler.openIframe();
     } catch (requestError) {
       setError(requestError.message || "Payment failed. Try again.");
     } finally {
@@ -134,7 +184,7 @@ const CheckoutPage = () => {
             <small>Our PCI DSS compliant iframe ensures card data never hits your server</small>
           </fieldset>
 
-          <button type="submit" className="client-primary-button full-width secure-pay" disabled={loading || !formData.cardToken}>
+          <button type="submit" className="client-primary-button full-width secure-pay" disabled={loading}>
             {loading ? "🔒 Processing secure payment..." : `🔒 Pay Securely ${formatCurrency(getCartTotal(cart))}`}
           </button>
         </form>

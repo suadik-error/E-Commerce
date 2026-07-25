@@ -3,7 +3,7 @@ import { protectRoute, checkRole } from "../middleware/auth.middleware.js";
 import { 
     createSale, 
     createStorefrontOrder,
-    createPaymentIntent,
+    verifyPaystackPayment,
     getAllSales, 
     getSaleById, 
     getMyStorefrontOrders,
@@ -19,7 +19,7 @@ const router = express.Router();
 router.use(protectRoute);
 
 router.post("/checkout", createStorefrontOrder);
-router.post("/payment-intent", createPaymentIntent);
+router.post("/paystack/verify", verifyPaystackPayment);
 router.get("/mine", getMyStorefrontOrders);
 router.post("/", createSale);
 router.get("/", getAllSales);

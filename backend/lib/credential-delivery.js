@@ -8,12 +8,13 @@ Please login and change this password immediately to a strong password you can r
 export const sendCredentialsEmail = async ({ toEmail, name, password }) => {
   const apiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.RESEND_FROM_EMAIL;
+  const normalizedEmail = String(toEmail || "").trim();
 
   if (!apiKey || !fromEmail) {
     return { sent: false, channel: "email", reason: "Email provider not configured" };
   }
 
-  if (!toEmail) {
+  if (!normalizedEmail) {
     return { sent: false, channel: "email", reason: "Recipient email missing" };
   }
 
@@ -53,12 +54,13 @@ export const sendCredentialsSms = async ({ toPhone, name, email, password }) => 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const fromPhone = process.env.TWILIO_FROM_NUMBER;
+  const normalizedPhone = String(toPhone || "").trim();
 
   if (!accountSid || !authToken || !fromPhone) {
     return { sent: false, channel: "sms", reason: "SMS provider not configured" };
   }
 
-  if (!toPhone) {
+  if (!normalizedPhone) {
     return { sent: false, channel: "sms", reason: "Recipient phone missing" };
   }
 
